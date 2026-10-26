@@ -504,9 +504,9 @@ function curRecord(){
 function keyOf(x){return JSON.stringify([x.m,x.c,x.vn||"",x.d,x.dt||null,x.legs.map(function(l){return [l.f,l.t,l.r,l.k||""]})])}
 function record(){
   var d=curRecord();if(!d)return;
-  d.ts=Date.now();
   var k=keyOf(d);
-  hist=hist.filter(function(x){return keyOf(x)!==k});
+  if(hist.some(function(x){return keyOf(x)===k})){say("同じ内容は、すでに記録されています");return}   // 同じ内容を続けて記録しない(表にも送らない)
+  d.ts=Date.now();
   hist.unshift(d);hist=hist.slice(0,50);
   if(d.d){drivers=[d.d].concat(drivers.filter(function(n){return n!==d.d})).slice(0,10);lsSet("toll.drivers",JSON.stringify(drivers));renderDrivers()}
   saveHist();renderHist();

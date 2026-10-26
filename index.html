@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>高速料金</title>
+<meta name="theme-color" content="#0e5a3a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="高速料金">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{--bg:#f2f4f1;--fg:#1b2420;--mute:#66726b;--sign:#0e5a3a;--signfg:#fff;--card:#fff;--line:#d5dbd6;--hl:#e3efe8;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121815;--fg:#e8eee9;--mute:#93a099;--sign:#1f7a52;--card:#1b2420;--line:#2e3a34;--hl:#223a2d}}
+:root[data-theme="dark"]{--bg:#121815;--fg:#e8eee9;--mute:#93a099;--sign:#1f7a52;--card:#1b2420;--line:#2e3a34;--hl:#223a2d}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic",system-ui,sans-serif;line-height:1.6;-webkit-text-size-adjust:100%}
+main{max-width:520px;margin:0 auto;padding:16px 16px 40px}
+
+.sign{background:var(--sign);color:var(--signfg);border-radius:10px;padding:14px 16px;border:2px solid var(--signfg);outline:3px solid var(--sign);margin-bottom:18px}
+.sign small{opacity:.85;display:block}
+.sign hr{border:0;border-top:1px solid rgba(255,255,255,.35);margin:14px 0}
+.legh{font-weight:700;margin-bottom:6px}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.g2 .wide{grid-column:1/-1}
+.g2 .c1{grid-column:1}
+.g2 .c2{grid-column:2}
+.pick select,.sign .txt{width:100%;font:inherit;font-size:1.1rem;font-weight:700;padding:6px 6px;border-radius:8px;border:1px solid var(--signfg);background:transparent;color:var(--signfg)}
+.sign .txt{background:rgba(255,255,255,.14);font-weight:400}
+.sign input[type=date]{min-width:0;font-size:.95rem;padding:6px 4px;color-scheme:dark}
+.sign .txt::placeholder{color:rgba(255,255,255,.7)}
+.pick option{color:#1b2420;background:#fff}
+.retinfo{align-self:end;padding-bottom:7px;font-weight:700}
+.carhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:2px}
+.pill{border:1px solid rgba(255,255,255,.75);border-radius:999px;padding:3px 14px;font-size:1.1rem;font-weight:700;white-space:nowrap}
+
+
+
+
+.vrow{margin-bottom:8px}
+
+
+
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #f0b400;outline-offset:2px}
+
+.hero{background:var(--card);border:2px solid var(--sign);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.lr{display:grid;grid-template-columns:2.6em 1fr auto;gap:8px;align-items:baseline;padding:3px 0}
+.lr .lw{color:var(--mute);font-size:.85rem}
+.lr .lt{min-width:0;overflow-wrap:anywhere}
+.lr .lt em{display:block;font-style:normal;color:var(--mute);font-size:.78rem}
+.lr b{font-variant-numeric:tabular-nums}
+.hero .who{color:var(--mute);font-size:.85rem;margin-top:6px}
+.hero .big{display:flex;align-items:baseline;gap:8px;margin:2px 0 8px}
+.hero .big.s b{font-size:2rem}
+.legb+.legb{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+.hero .big b{font-size:2.5rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.hero .big span{color:var(--mute);font-size:.9rem}
+.hero .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.hero .two div,.hero .opt{background:var(--hl);border-radius:8px;padding:8px 10px}
+.hero .opt{font:inherit;color:var(--fg);text-align:left;border:2px solid transparent;cursor:pointer;min-height:56px}
+.hero .opt.on{border-color:var(--sign);background:var(--card);box-shadow:inset 0 0 0 1px var(--sign)}
+.hero .opt:disabled{opacity:.55;cursor:default}
+.hero .two small,.hero .opt small{display:block;color:var(--mute);font-size:.78rem}
+.hero .two b{font-size:1.1rem;font-variant-numeric:tabular-nums}
+.hero .none{color:var(--mute);margin-top:8px}
+.hero .none b{display:block;color:var(--fg);font-size:1.05rem}
+.actions{display:flex;gap:8px;margin-top:12px}
+.btn{font:inherit;min-height:44px;padding:8px 14px;border-radius:10px;border:1px solid var(--sign);background:transparent;color:var(--sign);cursor:pointer}
+.btn.primary{background:var(--sign);color:var(--signfg);font-weight:700;flex:1}
+.btn[disabled]{opacity:.45;cursor:default}
+:root[data-theme="dark"] .btn:not(.primary){color:var(--fg)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn:not(.primary){color:var(--fg)}}
+.msg{min-height:1.4em;font-size:.85rem;color:var(--mute);margin-top:6px}
+
+.cap{color:var(--mute);font-size:.85rem;margin:14px 0 4px}
+.list{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.row{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:6px;align-items:baseline;padding:12px 16px;border-top:1px solid var(--line)}
+.head span{font-size:.8rem}
+.row b,.row i{text-align:right;font-style:normal}
+.row:first-child{border-top:0}
+.row b,.row i{font-size:1.05rem;font-variant-numeric:tabular-nums}
+.row i{color:var(--mute)}
+.head span:not(:first-child){text-align:right}
+.row span{color:var(--mute)}
+.row.mine{background:var(--hl);box-shadow:inset 4px 0 0 var(--sign)}
+.row.mine span{color:var(--fg);font-weight:700}
+.empty{padding:16px;color:var(--mute)}
+
+.hist{margin-top:4px}
+.tabs{display:flex;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.tab{flex:1;min-height:46px;border:0;background:none;color:var(--mute);font:inherit;font-weight:700;cursor:pointer}
+.tab.on{background:var(--sign);color:#fff}
+.tab .badge{background:#f0b400;color:#000;border-radius:10px;padding:1px 7px;font-size:.78rem;margin-left:4px}
+.page{display:none}
+.page.on{display:block}
+.hhead{display:flex;justify-content:space-between;align-items:center}
+.hhead h2{margin:0;font-size:1.05rem}
+.link{font:inherit;font-size:.85rem;min-height:44px;padding:0 4px;background:none;border:0;color:var(--mute);text-decoration:underline;cursor:pointer}
+.hitem{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:8px}
+.hdate{font-weight:700;margin-bottom:4px;font-variant-numeric:tabular-nums}
+.hitem .m{color:var(--mute);font-size:.82rem;margin-top:4px}
+.disc{color:var(--mute);font-size:.82rem;padding-left:calc(2.6em + 8px);font-variant-numeric:tabular-nums}
+.hitem .btns{display:flex;gap:8px;margin-top:8px}
+.hitem .btn{min-height:40px;padding:4px 12px;font-size:.9rem}
+.hitem .lr b{font-weight:700}
+.note{color:var(--mute);font-size:.85rem;margin-top:10px}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<main>
+<nav class="tabs" role="tablist">
+<button class="tab on" id="tab_search" type="button" role="tab" aria-selected="true">料金検索</button>
+<button class="tab" id="tab_logs" type="button" role="tab" aria-selected="false">履歴 <span class="badge" id="logBadge">0</span></button>
+</nav>
+<div id="page-search" class="page on">
+<div class="sign">
+<div class="g2"><label class="pick"><small>走行日(開始)</small><input class="txt" id="d1" type="date"></label><label class="pick"><small>走行日(終了)</small><input class="txt" id="d2" type="date"></label></div>
+<hr>
+<div class="legh">行き</div>
+<div class="g2" id="o_box"></div>
+<hr>
+<div class="g2">
+<label class="pick"><small>帰り</small><select id="retMode"><option value="rev">行きの逆</option><option value="own">自分で選ぶ</option><option value="none">なし</option></select></label>
+<div class="retinfo" id="retInfo"></div>
+</div>
+<div class="g2" id="r_box" style="margin-top:12px" hidden></div>
+<hr>
+<label class="pick"><span class="carhead"><small>使用する車</small><span class="pill" id="pill"></span></span><select id="car"></select></label>
+<label class="pick" style="display:block;margin-top:12px"><small>運転者</small><input class="txt" id="driver" type="text" list="drivers" maxlength="20" placeholder="名前" autocomplete="off"></label>
+</div>
+<datalist id="drivers"></datalist>
+
+
+<div id="hero"></div>
+<div id="tables"></div>
+
+<p class="note">割引はETC車が対象です。休日割引は土日祝の地方部で、軽・普通車のみ(GW・お盆・年末年始・3連休などは対象外)。深夜割引は0〜4時に走行した場合で、全車種が対象です。</p>
+<p class="note">姨捨SAは、中型車・大型車は利用できません。</p>
+<p class="note">割引後の料金は、通常料金の7割を10円単位に丸めた計算で、実際と10円前後ずれることがあります。</p>
+<p class="note">一覧にない場所は「手入力…」で入力できます。料金のデータがない区間は、通常料金を自分で入力してください。</p>
+</div>
+
+<div id="page-logs" class="page">
+<section class="hist" aria-labelledby="hh">
+<div class="hhead"><h2 id="hh">履歴</h2><button class="link" id="clearAll" type="button">すべて削除</button></div>
+<div id="hlist"></div>
+<p class="note" id="storeNote" hidden>この画面では端末に保存できないため、履歴と運転者の選択は画面を閉じると消えます。</p>
+</section>
+<p class="note">運転者の選択・履歴は、この端末のこのブラウザにだけ保存されます。</p>
+</div>
+</main>
+<script>
+var DEST={
+"梓川スマート":["麻績","姨捨SA","更埴","長野","須坂長野東","小布施PA"],
+"塩尻":["諏訪","諏訪南","小淵沢","長坂"],
+"東部湯の丸":["松井田妙義","吉井","藤岡","上里SA","本庄児玉","寄居PA","花園","嵐山小川","東松山","高崎","前橋","水上","駒形","太田桐生","足利","佐野田沼"]
+};
+// 東部湯の丸から先は、路線を選ぶと到着が絞られる
+var ROUTES={"東部湯の丸":{
+"高崎線・北陸新幹線":["松井田妙義","吉井","藤岡","上里SA","本庄児玉","寄居PA","花園","嵐山小川","東松山","高崎"],
+"両毛線・上越新幹線":["高崎","前橋","水上","駒形","太田桐生","足利","佐野田沼"]
+}};
+var FROMS=Object.keys(DEST);
+var CLASSES=[["軽自動車等",0.8],["普通車",1],["中型車",1.2],["大型車",1.65]];
+var FLEET=[["チビホロ",2],["デカホロ",2],["ボトルカー",2],["ガッツ",2],["800",2],["チビユニ",2],["ミニユニ",2],["デカユニ",3],["ダンプ",2],["バケ車",2],["旧ハイエース",1],["新ハイエース",1],["VOXY",1],["シエンタ",1],["ハイゼット",0],["軽トラ",0],["軌陸車(キリン)①",2],["軌陸車(キリン)②",2],["軌陸車(キリン)③",2],["軌陸車(ゴクウ)",2],["軌陸車(マジック)",2],["軌陸車(ユニック)",2],["軌陸車(ユニック)②",2],["軌陸車(大型ユニック)",3]];   // 社用車(名前, 車種区分の番号)
+// 出発|到着 ごとの料金。[軽, 普通, 中型, 大型] の順。公式の料金がわかる車種だけ入れる(空はnull、利用できない車種は-1)
+// 逆向き(到着|出発)も同じ料金として扱う
+var prices={
+"梓川スマート|麻績":[750,890,1040,1370],
+"梓川スマート|姨捨SA":[910,1090,-1,-1],
+"梓川スマート|更埴":[1150,1400,1640,2200],
+"梓川スマート|長野":[1300,1580,1870,2500],
+"梓川スマート|須坂長野東":[1510,1850,2190,2950],
+"梓川スマート|小布施PA":[1660,2030,2410,3250],
+"塩尻|諏訪":[620,730,850,1100],
+"塩尻|諏訪南":[860,1030,1210,1600],
+"塩尻|小淵沢":[1130,1370,1620,2160],
+"塩尻|長坂":[1310,1600,1880,2530],
+"東部湯の丸|松井田妙義":[1270,1550,1820,2450],
+"東部湯の丸|吉井":[1840,2260,2680,3620],
+"東部湯の丸|藤岡":[2040,2510,2980,4040],
+"東部湯の丸|高崎":[2260,2790,3310,4500],
+"東部湯の丸|前橋":[2360,2910,3460,4700],
+"東部湯の丸|水上":[3160,3910,4650,6340],
+"東部湯の丸|太田桐生":[2740,3380,4020,5470],
+"東部湯の丸|足利":[2900,3590,4270,5820],
+"東部湯の丸|上里SA":[2150,2650,3140,4260],
+"東部湯の丸|本庄児玉":[2280,2810,3330,4520],
+"東部湯の丸|寄居PA":[2390,2940,3500,4750],
+"東部湯の丸|花園":[2510,3100,3680,5000],
+"東部湯の丸|嵐山小川":[2650,3270,3890,5290],
+"東部湯の丸|東松山":[2780,3440,4090,5560],
+"東部湯の丸|駒形":[2360,2910,3460,4700],
+"東部湯の丸|佐野田沼":[3040,3760,4480,6090]
+};
+var MANUAL="__manual";
+// 料金データのある組み合わせ(どちら向きでも使える)
+var ADJ={},ALL=FROMS.slice();
+FROMS.forEach(function(f){
+  (ADJ[f]=ADJ[f]||[]);
+  DEST[f].forEach(function(d){ADJ[f].push(d);(ADJ[d]=ADJ[d]||[]).push(f);if(ALL.indexOf(d)<0)ALL.push(d)});
+});
+
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function fmt(n){return "¥"+n.toLocaleString("ja-JP")}
+function disc(x){return Math.round(x*7/100)*10}
+function find(x,y){return prices[x+"|"+y]||prices[y+"|"+x]||null}
+function base(a,j){
+  if(a[j]===-1)return null;
+  if(a[j])return a[j];
+  for(var r=0;r<4;r++){if(a[r]>0)return Math.round(a[r]/CLASSES[r][1]*CLASSES[j][1]/10)*10}
+  return null;
+}
+
+/* ---- 状態 ---- */
+function newLeg(f,t){return {f:f,ft:"",t:t,tt:"",route:null,price:null}}
+var legs={o:newLeg("梓川スマート","麻績"),r:newLeg("麻績","梓川スマート")};
+var retMode="rev";            // rev=行きの逆 / own=自分で選ぶ / none=なし
+var car=null,vehicles=[],sel="",vehName="";   // car=車種区分の番号、sel=選択中("v:車両ID" か "c:区分の番号")
+var SHEET_URL="https://script.google.com/macros/s/AKfycbyUEWKiRE5eu8wWOiU8vqAKkh8NwZBsiiRhqvvfm3h4_vRetqaj_QxM9SHvQzO7wkwobQ/exec";   // 会社のスプレッドシートの受け口(Apps ScriptのURL)。空なら端末内の履歴だけ使う
+var kinds={o:"n",r:"n"};
+var KN={n:"通常",h:"割引",y:"割引"};   // 休日割引と深夜割引は同じ「割引」にまとめる(30%引き)
+function kindOf(e,c){return kinds[e.key]==="y"?"y":"n"}
+function pick(c,k){return k==="y"?c.y:c.n}
+var d1="",d2="";
+function ymd(dt){return dt.getFullYear()+"-"+("0"+(dt.getMonth()+1)).slice(-2)+"-"+("0"+dt.getDate()).slice(-2)}
+function slash(s){return s.replace(/-/g,"/")}
+function rangeText(a,b){return a===b?slash(a):slash(a)+"～"+slash(b)}
+var driver="",drivers=[],hist=[],armed=false,msgTimer=null,vmsgTimer=null;
+function nm(leg,k){return leg[k]===MANUAL?(leg[k+"t"]||"").trim():leg[k]}
+function fromOptions(p){return p==="o"?FROMS:ALL}
+function toOptions(leg){
+  var f=nm(leg,"f"),R=ROUTES[f];
+  if(R){if(!R[leg.route])leg.route=Object.keys(R)[0];return R[leg.route].slice()}
+  if(ADJ[f])return ADJ[f].slice();
+  return ALL.filter(function(x){return x!==f});
+}
+
+/* ---- 保存(使えない環境でも画面は動く) ---- */
+var store=(function(){try{localStorage.setItem("toll.t","1");localStorage.removeItem("toll.t");return true}catch(e){return false}})();
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function normItem(x){
+  if(!x||typeof x!=="object"||!(x.c>=0&&x.c<4))return null;
+  var num=function(v){return typeof v==="number"&&isFinite(v)};
+  if(Array.isArray(x.legs)){
+    var ok=x.legs.length>=1&&x.legs.length<=2&&x.legs.every(function(l){return l&&typeof l.f==="string"&&typeof l.t==="string"&&num(l.n)&&num(l.y)});
+    if(ok)x.legs.forEach(function(l){if(!(l.k==="n"||l.k==="h"||l.k==="y")||!num(l.p)){delete l.k;delete l.p}});
+    if(!ok||!num(x.n)||!num(x.y))return null;
+    if(typeof x.vn!=="string")x.vn="";
+    if(!(Array.isArray(x.dt)&&x.dt.length===2&&x.dt.every(function(s){return typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s)})))x.dt=null;
+    return x;
+  }
+  // 古い形式(1区間だけの記録)を新しい形式に直す
+  if(typeof x.f==="string"&&typeof x.t==="string"&&num(x.n)&&num(x.y)){
+    var h=num(x.h)?x.h:null;
+    return {ts:x.ts,c:x.c,vn:"",d:"",m:"none",legs:[{f:x.f,t:x.t,r:x.r||"",n:x.n,h:h,y:x.y,u:false}],n:x.n,h:h,y:x.y};
+  }
+  return null;
+}
+function loadState(){
+  sel=lsGet("toll.sel");
+  applySel();
+  var m=lsGet("toll.mode");
+  retMode=(m==="own"||m==="none")?m:"rev";
+  driver=(lsGet("toll.driver")||"").slice(0,20);
+  try{var d=JSON.parse(lsGet("toll.drivers")||"[]");if(Array.isArray(d))drivers=d.filter(function(s){return typeof s==="string"&&s}).slice(0,10)}catch(e){drivers=[]}
+  try{
+    var h=JSON.parse(lsGet("toll.hist")||"[]");
+    if(Array.isArray(h))hist=h.map(normItem).filter(Boolean).slice(0,50);
+  }catch(e){hist=[]}
+}
+function saveSel(){lsSet("toll.sel",sel)}
+function saveVehicles(){lsSet("toll.vehicles",JSON.stringify(vehicles))}
+function saveHist(){lsSet("toll.hist",JSON.stringify(hist))}
+
+/* ---- 入力欄 ---- */
+function legHTML(p,label){
+  return '<label class="pick"><small>出発</small><select id="'+p+'_f"></select></label>'+
+  '<label class="pick"><small>到着</small><select id="'+p+'_t"></select></label>'+
+  '<input class="txt c1" id="'+p+'_ft" type="text" maxlength="30" placeholder="出発を入力" aria-label="'+label+'の出発(手入力)" hidden>'+
+  '<input class="txt c2" id="'+p+'_tt" type="text" maxlength="30" placeholder="到着を入力" aria-label="'+label+'の到着(手入力)" hidden>'+
+  '<label class="pick wide" id="'+p+'_routeBox" hidden><small>路線</small><select id="'+p+'_route"></select></label>'+
+  '<label class="pick wide" id="'+p+'_priceBox" hidden><small>通常料金(円・手入力)</small><input class="txt" id="'+p+'_price" type="text" inputmode="numeric" maxlength="6" placeholder="例 1200" autocomplete="off"></label>';
+}
+$("o_box").innerHTML=legHTML("o","行き");
+$("r_box").innerHTML=legHTML("r","帰り");
+
+function fillSel(id,list,val,withManual){
+  var e=$(id);e.innerHTML="";
+  list.forEach(function(n){var o=document.createElement("option");o.value=n;o.textContent=n;e.appendChild(o)});
+  if(withManual){var m=document.createElement("option");m.value=MANUAL;m.textContent="手入力…";e.appendChild(m)}
+  e.value=val;
+}
+function syncLeg(p){
+  var leg=legs[p],fo=fromOptions(p);
+  if(leg.f!==MANUAL&&fo.indexOf(leg.f)<0)leg.f=fo[0];
+  fillSel(p+"_f",fo,leg.f,true);
+  $(p+"_ft").hidden=leg.f!==MANUAL;
+  if($(p+"_ft").value!==leg.ft)$(p+"_ft").value=leg.ft;
+  var R=ROUTES[nm(leg,"f")];
+  $(p+"_routeBox").hidden=!R;
+  var to=toOptions(leg);
+  if(R)fillSel(p+"_route",Object.keys(R),leg.route,false);
+  if(leg.t!==MANUAL&&to.indexOf(leg.t)<0)leg.t=to[0]||MANUAL;
+  fillSel(p+"_t",to,leg.t,true);
+  $(p+"_tt").hidden=leg.t!==MANUAL;
+  if($(p+"_tt").value!==leg.tt)$(p+"_tt").value=leg.tt;
+}
+function bindLeg(p){
+  var leg=legs[p];
+  $(p+"_f").onchange=function(){leg.f=this.value;leg.route=null;syncLeg(p);render()};
+  $(p+"_ft").oninput=function(){leg.ft=this.value;leg.route=null;syncLeg(p);render()};
+  $(p+"_route").onchange=function(){leg.route=this.value;syncLeg(p);render()};
+  $(p+"_t").onchange=function(){leg.t=this.value;syncLeg(p);render()};
+  $(p+"_tt").oninput=function(){leg.tt=this.value;render()};
+  $(p+"_price").oninput=function(){
+    var v=this.value.replace(/[^0-9]/g,"");
+    if(v!==this.value)this.value=v;
+    leg.price=v?parseInt(v,10):null;render();
+  };
+}
+function setLeg(p,f,t,r,price){
+  var leg=legs[p];
+  if(fromOptions(p).indexOf(f)>=0){leg.f=f;leg.ft=""}else{leg.f=MANUAL;leg.ft=f}
+  leg.route=r||null;leg.t=null;leg.tt="";
+  var to=toOptions(leg);
+  if(to.indexOf(t)>=0){leg.t=t}else{leg.t=MANUAL;leg.tt=t}
+  leg.price=price>0?price:null;
+  $(p+"_price").value=leg.price?String(leg.price):"";
+  syncLeg(p);
+}
+function applySel(){
+  car=null;vehName="";
+  if(sel&&sel.indexOf("f:")===0){
+    var f=FLEET[parseInt(sel.slice(2),10)];
+    if(f){car=f[1];vehName=f[0]}else sel="";
+  }else sel="";
+}
+function carLabel(vn,c){return vn?vn+"・"+CLASSES[c][0]:CLASSES[c][0]}
+function renderCar(){
+  var s=$("car");s.innerHTML="";
+  function opt(parent,v,text){var o=document.createElement("option");o.value=v;o.textContent=text;parent.appendChild(o)}
+  opt(s,"","選んでください");
+  FLEET.forEach(function(f,i){opt(s,"f:"+i,f[0])});
+  s.value=sel;
+  $("pill").textContent=car===null?"":"車種区分 "+CLASSES[car][0];
+}
+
+
+function renderDrivers(){
+  $("drivers").innerHTML=drivers.map(function(n){return '<option value="'+esc(n)+'">'}).join("");
+}
+
+/* ---- 計算 ---- */
+function effLegs(){
+  var o=legs.o,of=nm(o,"f"),ot=nm(o,"t"),R=ROUTES[of]?o.route:"";
+  var es=[{key:"o",label:"行き",from:of,to:ot,route:R||"",manual:o.price}];
+  if(retMode==="rev")es.push({key:"r",label:"帰り",from:ot,to:of,route:R||"",manual:o.price});
+  else if(retMode==="own"){
+    var r=legs.r,rf=nm(r,"f");
+    es.push({key:"r",label:"帰り",from:rf,to:nm(r,"t"),route:ROUTES[rf]?r.route:"",manual:r.price});
+  }
+  return es;
+}
+function calcLeg(e){
+  if(!e.from||!e.to)return {s:"empty"};
+  if(e.from===e.to)return {s:"same"};
+  var a=find(e.from,e.to);
+  if(car===null)return {s:"nocar",a:a};
+  if(a){
+    var b=base(a,car);
+    if(b===null)return {s:"na",a:a};
+    return {s:"ok",a:a,n:b,h:car<2?disc(b):null,y:disc(b)};
+  }
+  if(e.manual>0)return {s:"ok",n:e.manual,h:car<2?disc(e.manual):null,y:disc(e.manual),manual:true};
+  return {s:"none"};
+}
+function totals(cs){
+  var t={n:0,h:0,y:0,hOK:true};
+  cs.forEach(function(c){t.n+=c.n;t.y+=c.y;if(c.h===null)t.hOK=false;else t.h+=c.h});
+  t.h=t.hOK?t.h:null;
+  return t;
+}
+function allOK(cs){return car!==null&&cs.every(function(c){return c.s==="ok"})}
+
+/* ---- 表示 ---- */
+function legPrice(c){
+  return c.s==="ok"?fmt(c.n):c.s==="na"?"利用できません":c.s==="none"?"料金を入力":"—";
+}
+function legBlock(e,c,many){
+  var k=kindOf(e,c);
+  function opt(kk,price){
+    var off=price===null;
+    return '<button type="button" class="opt'+(k===kk?' on':'')+'" data-leg="'+e.key+'" data-k="'+kk+'"'+(off?' disabled':'')+' aria-pressed="'+(k===kk?'true':'false')+'"><small>'+KN[kk]+'</small><b>'+(off?"対象外":fmt(price))+'</b></button>';
+  }
+  return '<div class="legb"><div class="lr"><span class="lw">'+e.label+'</span><span class="lt">'+esc(e.from)+' → '+esc(e.to)+(e.route?'<em>'+esc(e.route)+'</em>':'')+'</span></div>'+
+    '<div class="big'+(many?' s':'')+'"><b>'+fmt(pick(c,k))+'</b><span>'+KN[k]+'</span></div>'+
+    '<div class="two">'+opt("n",c.n)+opt("y",c.y)+'</div></div>';
+}
+function renderHero(es,cs){
+  var h=$("hero");
+  if(car===null){
+    h.innerHTML='<div class="hero"><div class="none"><b>使用する車を選んでください</b>選んだ車の料金を、ここに大きく表示します。</div></div>';return;
+  }
+  var who='<div class="who">'+esc(carLabel(vehName,car))+(driver.trim()?'・運転者 '+esc(driver.trim()):'')+'</div>';
+  if(allOK(cs)){
+    h.innerHTML='<div class="hero">'+es.map(function(e,i){return legBlock(e,cs[i],es.length>1)}).join("")+who+
+      '<div class="actions"><button class="btn primary" id="rec" type="button">この条件で記録する</button></div>'+
+      '<div class="msg" id="msg" role="status" aria-live="polite"></div></div>';
+    $("rec").onclick=record;
+    return;
+  }
+  var rows=es.map(function(e){
+    var i=es.indexOf(e);
+    return '<div class="lr"><span class="lw">'+e.label+'</span><span class="lt">'+esc(e.from||"?")+' → '+esc(e.to||"?")+(e.route?'<em>'+esc(e.route)+'</em>':'')+'</span><b>'+legPrice(cs[i])+'</b></div>';
+  }).join("");
+  var why=cs.some(function(c){return c.s==="empty"||c.s==="same"})?"出発と到着を、別々の場所で選んでください。":
+          cs.some(function(c){return c.s==="na"})?(vehName?esc(vehName)+"(車種区分 "+esc(CLASSES[car][0])+")":esc(CLASSES[car][0]))+"は、利用できない区間があります。":
+          "料金のデータがない区間は、通常料金を入力してください。";
+  h.innerHTML='<div class="hero">'+rows+who+'<div class="none"><b>'+why+'</b></div></div>';
+}
+function tableHTML(a){
+  return '<div class="list"><div class="row head"><span>車種</span><span>通常</span><span>休日30%引</span><span>深夜30%引</span></div>'+CLASSES.map(function(k,j){
+    var b=base(a,j),cls=(j===car)?"row mine":"row";
+    if(b===null)return '<div class="'+cls+'"><span>'+k[0]+'</span><b>—</b><i>—</i><i>—</i></div>';
+    return '<div class="'+cls+'"><span>'+k[0]+'</span><b>'+fmt(b)+'</b><i>'+(j<2?fmt(disc(b)):"—")+'</i><i>'+fmt(disc(b))+'</i></div>';
+  }).join("")+'</div>';
+}
+function renderTables(es){
+  var html="",shown=0;
+  es.forEach(function(e,i){
+    if(i===1&&retMode==="rev")return;
+    var a=(e.from&&e.to&&e.from!==e.to)?find(e.from,e.to):null;
+    if(!a)return;
+    var cap=es.length===1?"":(retMode==="rev"?"行き・帰り":e.label);
+    html+=(cap?'<div class="cap">'+cap+'('+esc(e.from)+' → '+esc(e.to)+')</div>':'')+tableHTML(a);
+    shown++;
+  });
+  $("tables").innerHTML=html;
+}
+function two(n){return n<10?"0"+n:""+n}
+function when(ts){var d=new Date(ts);return (d.getMonth()+1)+"/"+d.getDate()+" "+two(d.getHours())+":"+two(d.getMinutes())}
+function showPage(n){
+  ["search","logs"].forEach(function(k){
+    $("page-"+k).classList.toggle("on",k===n);
+    $("tab_"+k).classList.toggle("on",k===n);
+    $("tab_"+k).setAttribute("aria-selected",k===n?"true":"false");
+  });
+  window.scrollTo(0,0);
+}
+$("tab_search").onclick=function(){showPage("search")};
+$("tab_logs").onclick=function(){showPage("logs")};
+function renderHist(){
+  var box=$("hlist");
+  $("logBadge").textContent=hist.length;
+  $("clearAll").style.visibility=hist.length?"visible":"hidden";
+  if(!hist.length){box.innerHTML='<div class="empty">「この条件で記録する」を押すと、ここに残ります。</div>';return}
+  box.innerHTML=hist.map(function(x,i){
+    var twoLegs=x.legs.length>1;
+    var lines=x.legs.map(function(l,k){
+      return '<div class="lr"><span class="lw">'+(twoLegs?(k?"帰り":"行き"):"")+'</span><span class="lt">'+esc(l.f)+' → '+esc(l.t)+'</span><b>'+fmt(l.k?l.p:l.n)+'</b></div>'+
+        (l.k?'<div class="disc">'+KN[l.k]+'</div>':'<div class="disc">割引 '+fmt(l.y)+'</div>');
+    }).join("");
+    var routes=[];x.legs.forEach(function(l){if(l.r&&routes.indexOf(l.r)<0)routes.push(l.r)});
+    var meta=[carLabel(x.vn,x.c)].concat(x.d?["運転者 "+x.d]:[]).concat(routes).concat([when(x.ts)]).map(esc).join("・");
+    return '<div class="hitem">'+(x.dt?'<div class="hdate">'+rangeText(x.dt[0],x.dt[1])+'</div>':'')+lines+'<div class="m">'+meta+'</div>'+
+    '<div class="btns"><button class="btn" type="button" data-act="go" data-i="'+i+'">編集</button><button class="btn" type="button" data-act="del" data-i="'+i+'">削除</button></div></div>';
+  }).join("");
+}
+function render(){
+  var es=effLegs(),cs=es.map(calcLeg);
+  // 料金のデータがない区間にだけ、料金の入力欄を出す
+  var needO=!!(es[0].from&&es[0].to&&es[0].from!==es[0].to&&!find(es[0].from,es[0].to));
+  $("o_priceBox").hidden=!needO;
+  var needR=retMode==="own"&&es[1]&&!!(es[1].from&&es[1].to&&es[1].from!==es[1].to&&!find(es[1].from,es[1].to));
+  $("r_priceBox").hidden=!needR;
+  $("retInfo").textContent=retMode==="rev"?(es[1].from||"?")+" → "+(es[1].to||"?"):retMode==="none"?"片道だけ":"";
+  $("r_box").hidden=retMode!=="own";
+  renderHero(es,cs);renderTables(es);
+}
+function say(t){
+  var m=$("msg");if(!m)return;
+  m.textContent=t;clearTimeout(msgTimer);msgTimer=setTimeout(function(){var e=$("msg");if(e)e.textContent=""},3500);
+}
+
+/* ---- 記録・履歴の操作 ---- */
+function curRecord(){
+  var es=effLegs(),cs=es.map(calcLeg);
+  if(!allOK(cs))return null;
+  var t=totals(cs);
+  return {c:car,vn:vehName,d:driver.trim(),m:retMode,dt:[d1,d2],
+    legs:es.map(function(e,i){var k=kindOf(e,cs[i]);return {f:e.from,t:e.to,r:e.route||"",n:cs[i].n,h:cs[i].h,y:cs[i].y,u:!!cs[i].manual,k:k,p:pick(cs[i],k)}}),
+    n:t.n,h:t.h,y:t.y};
+}
+function keyOf(x){return JSON.stringify([x.m,x.c,x.vn||"",x.d,x.dt||null,x.legs.map(function(l){return [l.f,l.t,l.r,l.k||""]})])}
+function record(){
+  var d=curRecord();if(!d)return;
+  d.ts=Date.now();
+  var k=keyOf(d);
+  hist=hist.filter(function(x){return keyOf(x)!==k});
+  hist.unshift(d);hist=hist.slice(0,50);
+  if(d.d){drivers=[d.d].concat(drivers.filter(function(n){return n!==d.d})).slice(0,10);lsSet("toll.drivers",JSON.stringify(drivers));renderDrivers()}
+  saveHist();renderHist();
+  say(store?"履歴に記録しました":"履歴に記録しました(この画面では保存されません)");
+  sendSheet(d);
+}
+function sheetRow(d){
+  var o=d.legs[0],b=d.legs[1]||null;
+  return {id:d.ts+"-"+Math.random().toString(36).slice(2,7),ts:d.ts,from:d.dt?d.dt[0]:"",to:d.dt?d.dt[1]:"",driver:d.d,car:d.vn,cls:CLASSES[d.c][0],
+    o_f:o.f,o_t:o.t,o_r:o.r,o_k:KN[o.k||"n"],o_p:o.k?o.p:o.n,
+    r_f:b?b.f:"",r_t:b?b.t:"",r_r:b?b.r:"",r_k:b?KN[b.k||"n"]:"",r_p:b?(b.k?b.p:b.n):""};
+}
+function sendSheet(d){
+  if(!SHEET_URL)return;
+  var row=sheetRow(d);
+  try{
+    fetch(SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(row)})
+      .then(function(){say("履歴に記録し、会社の表にも送りました")},
+            function(){say("履歴に記録しました(会社の表には送れませんでした)")});
+  }catch(e){say("履歴に記録しました(会社の表には送れませんでした)")}
+}
+function goto(x){
+  var a=x.legs[0];
+  setLeg("o",a.f,a.t,a.r,a.u?a.n:null);
+  retMode=(x.m==="own"||x.m==="none")?x.m:"rev";
+  $("retMode").value=retMode;
+  kinds.o=x.legs[0].k==="n"||!x.legs[0].k?"n":"y";kinds.r=(x.legs[1]&&x.legs[1].k&&x.legs[1].k!=="n")?"y":"n";
+  if(x.dt){d1=x.dt[0];d2=x.dt[1];$("d1").value=d1;$("d2").value=d2}
+  if(retMode==="own"&&x.legs[1]){var b=x.legs[1];setLeg("r",b.f,b.t,b.r,b.u?b.n:null)}
+  lsSet("toll.mode",retMode);
+  render();
+  showPage("search");
+}
+$("hlist").addEventListener("click",function(ev){
+  var b=ev.target.closest("button[data-act]");if(!b)return;
+  var i=parseInt(b.getAttribute("data-i"),10),x=hist[i];if(!x)return;
+  if(b.getAttribute("data-act")==="go"){goto(x)}
+  else{hist.splice(i,1);saveHist();renderHist()}
+});
+$("clearAll").onclick=function(){
+  var b=this;
+  if(!armed){armed=true;b.textContent="もう一度押すと、すべて削除";setTimeout(function(){armed=false;b.textContent="すべて削除"},3000);return}
+  armed=false;b.textContent="すべて削除";hist=[];saveHist();renderHist();
+};
+$("car").onchange=function(){sel=this.value;applySel();saveSel();renderCar();render()};
+$("hero").addEventListener("click",function(ev){
+  var b=ev.target.closest("button.opt");if(!b||b.disabled)return;
+  kinds[b.getAttribute("data-leg")]=b.getAttribute("data-k");render();
+});
+$("d1").onchange=function(){
+  d1=this.value||ymd(yd);this.value=d1;
+  if(d2<d1){d2=d1;$("d2").value=d2}
+};
+$("d2").onchange=function(){
+  d2=this.value||d1;if(d2<d1)d2=d1;this.value=d2;
+};
+$("driver").oninput=function(){driver=this.value;lsSet("toll.driver",driver);render()};
+$("retMode").onchange=function(){
+  retMode=this.value;lsSet("toll.mode",retMode);
+  if(retMode==="own"){
+    // 最初は行きの逆を入れておく。そこから好きに変えられる
+    var o=legs.o;setLeg("r",nm(o,"t"),nm(o,"f"),"",o.price);
+  }
+  render();
+};
+
+/* ---- オフライン対応: Service Worker(https、または localhost で配信したときだけ動く。isSecureContext で判定) ---- */
+if("serviceWorker" in navigator&&window.isSecureContext){
+  window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
+}
+
+loadState();
+if(!store)$("storeNote").hidden=false;
+bindLeg("o");bindLeg("r");
+var yd=new Date();yd.setDate(yd.getDate()-1);d1=d2=ymd(yd);$("d1").value=d1;$("d2").value=d2;
+renderCar();renderDrivers();$("driver").value=driver;$("retMode").value=retMode;
+syncLeg("o");syncLeg("r");renderHist();render();
+</script>
+</body>
+</html>

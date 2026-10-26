@@ -76,6 +76,11 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 .btn[disabled]{opacity:.45;cursor:default}
 :root[data-theme="dark"] .btn:not(.primary){color:var(--fg)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn:not(.primary){color:var(--fg)}}
+#toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translate(-50%,30px);opacity:0;pointer-events:none;z-index:50;width:min(92vw,420px);box-sizing:border-box;padding:16px 18px;border-radius:14px;background:#0e5a3a;color:#fff;font-size:1.15rem;font-weight:700;text-align:center;box-shadow:0 8px 28px rgba(0,0,0,.35);border:2px solid #fff;transition:opacity .2s,transform .2s}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.warn{background:#b45309}
+#toast.err{background:#b91c1c}
+#toast small{display:block;font-weight:400;font-size:.85rem;margin-top:4px;opacity:.95}
 .msg{min-height:1.4em;font-size:.85rem;color:var(--mute);margin-top:6px}
 
 .cap{color:var(--mute);font-size:.85rem;margin:14px 0 4px}
@@ -138,6 +143,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <datalist id="drivers"></datalist>
 
 
+<div id="toast" role="status" aria-live="polite"></div>
 <div id="hero"></div>
 <div id="tables"></div>
 
@@ -487,6 +493,16 @@ function render(){
   $("r_box").hidden=retMode!=="own";
   renderHero(es,cs);renderTables(es);
 }
+var toastTimer=null;
+function toast(title,sub,kind){
+  var e=$("toast");if(!e)return;
+  e.className=kind||"";
+  e.textContent="";
+  var b=document.createElement("div");b.textContent=(kind==="warn"?"! ":kind==="err"?"× ":"✓ ")+title;e.appendChild(b);
+  if(sub){var s=document.createElement("small");s.textContent=sub;e.appendChild(s)}
+  void e.offsetWidth;e.classList.add("show");
+  clearTimeout(toastTimer);toastTimer=setTimeout(function(){e.classList.remove("show")},kind?5000:3200);
+}
 function say(t){
   var m=$("msg");if(!m)return;
   m.textContent=t;clearTimeout(msgTimer);msgTimer=setTimeout(function(){var e=$("msg");if(e)e.textContent=""},3500);
@@ -505,12 +521,13 @@ function keyOf(x){return JSON.stringify([x.m,x.c,x.vn||"",x.d,x.dt||null,x.legs.
 function record(){
   var d=curRecord();if(!d)return;
   var k=keyOf(d);
-  if(hist.some(function(x){return keyOf(x)===k})){say("同じ内容は、すでに記録されています");return}   // 同じ内容を続けて記録しない(表にも送らない)
+  if(hist.some(function(x){return keyOf(x)===k})){say("同じ内容は、すでに記録されています");toast("すでに記録されています","同じ内容は、続けて記録できません","warn");return}   // 同じ内容を続けて記録しない(表にも送らない)
   d.ts=Date.now();
   hist.unshift(d);hist=hist.slice(0,50);
   if(d.d){drivers=[d.d].concat(drivers.filter(function(n){return n!==d.d})).slice(0,10);lsSet("toll.drivers",JSON.stringify(drivers));renderDrivers()}
   saveHist();renderHist();
   say(store?"履歴に記録しました":"履歴に記録しました(この画面では保存されません)");
+  if(store)toast("記録しました",SHEET_URL?"会社の表に送っています…":"履歴に保存しました");else toast("記録しました","この画面では保存されません(画面を閉じると消えます)","warn");
   sendSheet(d);
 }
 function sheetRow(d){
@@ -524,9 +541,9 @@ function sendSheet(d){
   var row=sheetRow(d);
   try{
     fetch(SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(row)})
-      .then(function(){say("履歴に記録し、会社の表にも送りました")},
-            function(){say("履歴に記録しました(会社の表には送れませんでした)")});
-  }catch(e){say("履歴に記録しました(会社の表には送れませんでした)")}
+      .then(function(){say("履歴に記録し、会社の表にも送りました");toast("記録しました","会社の表にも送りました")},
+            function(){say("履歴に記録しました(会社の表には送れませんでした)");toast("記録しました","会社の表には送れませんでした(履歴には保存済み)","warn")});
+  }catch(e){say("履歴に記録しました(会社の表には送れませんでした)");toast("記録しました","会社の表には送れませんでした(履歴には保存済み)","warn")}
 }
 function goto(x){
   var a=x.legs[0];

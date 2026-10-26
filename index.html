@@ -314,11 +314,19 @@ function slash(s){return s.replace(/-/g,"/")}
 function rangeText(a,b){return a===b?slash(a):slash(a)+"～"+slash(b)}
 var driver="",drivers=[],hist=[],armed=false,msgTimer=null,vmsgTimer=null;
 function nm(leg,k){return leg[k]===MANUAL?(leg[k+"t"]||"").trim():leg[k]}
-function fromOptions(p){return p==="o"?FROMS:ALL}
+// 片道だけの「帰り」では、出発は料金所の先の場所すべて、到着は料金のある出発地(塩尻・松本・梓川・安曇野)にする
+var RETFROMS=[];
+FROMS.forEach(function(f){if(ROUTES[f])return;DEST[f].forEach(function(d){if(RETFROMS.indexOf(d)<0)RETFROMS.push(d)})});
+function retOnly(){return retMode==="none"&&oneSide==="r"}
+function fromOptions(p){return p==="o"?(retOnly()?RETFROMS:FROMS):ALL}
 function toOptions(leg){
   var f=nm(leg,"f"),R=ROUTES[f];
   if(R){if(!R[leg.route])leg.route=Object.keys(R)[0];return R[leg.route].slice()}
-  if(ADJ[f])return ADJ[f].slice();
+  if(ADJ[f]){
+    var L=ADJ[f].slice();
+    if(retOnly()&&leg===legs.o){var ord=["塩尻","松本","梓川スマート","安曇野"];L.sort(function(x,y){return ord.indexOf(x)-ord.indexOf(y)})}   // 帰りの到着は 塩尻・松本・梓川・安曇野 の順
+    return L;
+  }
   return ALL.filter(function(x){return x!==f});
 }
 
@@ -348,7 +356,7 @@ function normItem(x){
 function loadState(){
   sel=lsGet("toll.sel");
   applySel();
-  oneSide=lsGet("toll.side")==="r"?"r":"o";
+  oneSide="o";   // 帰りだけの設定は、次に開いたときは行きに戻す
   var m=lsGet("toll.mode");
   retMode=(m==="own"||m==="none")?m:"rev";
   driver=(lsGet("toll.driver")||"").slice(0,20);
@@ -625,9 +633,9 @@ function sendSheet(d){
 }
 function goto(x){
   var a=x.legs[0];
-  setLeg("o",a.f,a.t,a.r,a.u?a.n:null);
   retMode=(x.m==="own"||x.m==="none")?x.m:"rev";
-  oneSide=x.sd==="r"?"r":"o";lsSet("toll.side",oneSide);$("side").value=oneSide;
+  oneSide=(retMode==="none"&&x.sd==="r")?"r":"o";lsSet("toll.side",oneSide);$("side").value=oneSide;
+  setLeg("o",a.f,a.t,a.r,a.u?a.n:null);
   $("one").checked=retMode==="none";if(retMode!=="none")prevRet=retMode;
   $("retMode").value=retMode==="none"?prevRet:retMode;
   kinds.o=x.legs[0].k==="n"||!x.legs[0].k?"n":"y";kinds.r=(x.legs[1]&&x.legs[1].k&&x.legs[1].k!=="n")?"y":"n";
@@ -671,8 +679,18 @@ function applyRet(m){
 }
 $("retMode").onchange=function(){prevRet=this.value;applyRet(this.value)};
 $("one").onchange=function(){
-  if(this.checked)applyRet("none");
-  else{$("retMode").value=prevRet;applyRet(prevRet)}
+  if(this.checked){oneSide="o";$("side").value="o";lsSet("toll.side","o");applyRet("none")}
+  else{
+    // 帰りを選んでいたときは、行きの向きに戻してから、往復に戻す
+    if(oneSide==="r"){
+      var o=legs.o,f=nm(o,"f"),to=nm(o,"t");
+      oneSide="o";$("side").value="o";lsSet("toll.side","o");
+      retMode="rev";
+      setLeg("o",to,f,ROUTES[to]?swapRoute:null,o.price);
+    }
+    $("retMode").value=prevRet;applyRet(prevRet);syncLeg("o");
+  }
+  syncLeg("o");render();
 };
 var swapRoute=null;
 $("side").onchange=function(){

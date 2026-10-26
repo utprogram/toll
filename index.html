@@ -103,6 +103,15 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 .tab.on{background:var(--sign);color:#fff}
 .tab .badge{background:#f0b400;color:#000;border-radius:10px;padding:1px 7px;font-size:.78rem;margin-left:4px}
 .page{display:none}
+.help h2{margin:4px 0 10px;font-size:1.1rem}
+.help h3{margin:18px 0 6px;font-size:1rem}
+.help ul,.help ol{margin:0;padding-left:1.3em}
+.help li{margin:6px 0;line-height:1.55}
+.help .steps{list-style:none;padding:0;counter-reset:s}
+.help .steps li{counter-increment:s;position:relative;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px 10px 44px;margin:8px 0}
+.help .steps li::before{content:counter(s);position:absolute;left:12px;top:10px;width:24px;height:24px;border-radius:50%;background:var(--sign);color:#fff;font-weight:700;text-align:center;line-height:24px}
+.help .steps b{display:block}
+.help .steps span{color:var(--mute);font-size:.9rem}
 .page.on{display:block}
 .hhead{display:flex;justify-content:space-between;align-items:center}
 .hhead h2{margin:0;font-size:1.05rem}
@@ -123,6 +132,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <nav class="tabs" role="tablist">
 <button class="tab on" id="tab_search" type="button" role="tab" aria-selected="true">料金検索</button>
 <button class="tab" id="tab_logs" type="button" role="tab" aria-selected="false">履歴 <span class="badge" id="logBadge">0</span></button>
+<button class="tab" id="tab_help" type="button" role="tab" aria-selected="false">使い方</button>
 </nav>
 <div id="page-search" class="page on">
 <div class="sign">
@@ -160,6 +170,42 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <p class="note" id="storeNote" hidden>この画面では端末に保存できないため、履歴と運転者の選択は画面を閉じると消えます。</p>
 </section>
 <p class="note">運転者の選択・履歴は、この端末のこのブラウザにだけ保存されます。</p>
+</div>
+<div id="page-help" class="page">
+<section class="help">
+<h2>使い方</h2>
+<ol class="steps">
+<li><b>走行日を選ぶ</b><span>はじめは前日になっています。日をまたぐときは、終了日も変えてください。</span></li>
+<li><b>行きの出発と到着を選ぶ</b><span>東部湯の丸は、路線も選びます。一覧にない場所は「手入力…」で入力できます。</span></li>
+<li><b>帰りを決める</b><span>「行きの逆」「自分で選ぶ」「なし」から選びます。</span></li>
+<li><b>使用する車を選ぶ</b><span>選ぶと、右上に車種区分が出ます。運転者の名前も入れてください。</span></li>
+<li><b>通常か割引かを選ぶ</b><span>行きと帰りそれぞれで、料金のボタンを押して選びます。選んだ方が記録されます。</span></li>
+<li><b>「この条件で記録する」を押す</b><span>画面の下に「記録しました」と出れば完了です。履歴に残り、会社の表にも送られます。</span></li>
+</ol>
+<h3>履歴</h3>
+<ul>
+<li>「編集」を押すと、その条件が料金検索に戻ります。直して、もう一度記録できます。</li>
+<li>「削除」で、その記録を消せます。会社の表の行は、消えません。</li>
+<li>同じ内容は、続けて記録できません。日付や料金区分などを変えると、記録できます。</li>
+<li>履歴は、この端末に最大50件まで残ります。</li>
+</ul>
+<h3>割引について</h3>
+<ul>
+<li>「割引」は、休日割引・深夜割引の金額です。どちらも通常料金の3割引です。</li>
+<li>休日割引は、土日祝の地方部で、軽自動車と普通車だけが対象です。深夜割引は、0〜4時に走ったときで、全車種が対象です。</li>
+<li>割引はETC車が対象です。金額は目安で、実際と10円前後ずれることがあります。</li>
+</ul>
+<h3>ホーム画面に追加する</h3>
+<ul>
+<li><b>iPhone:</b> Safariで開き、下の共有ボタン →「ホーム画面に追加」を押します。</li>
+<li><b>Android:</b> Chromeで開き、右上のメニュー →「ホーム画面に追加」を押します。</li>
+</ul>
+<h3>困ったとき</h3>
+<ul>
+<li>「会社の表には送れませんでした」と出たときは、履歴には残っていますが、会社の表には入っていません。管理者に伝えてください。</li>
+<li>料金が出ないときは、「手入力…」で通常料金を入力してください。</li>
+</ul>
+</section>
 </div>
 </main>
 <script>
@@ -456,7 +502,7 @@ function renderTables(es){
 function two(n){return n<10?"0"+n:""+n}
 function when(ts){var d=new Date(ts);return (d.getMonth()+1)+"/"+d.getDate()+" "+two(d.getHours())+":"+two(d.getMinutes())}
 function showPage(n){
-  ["search","logs"].forEach(function(k){
+  ["search","logs","help"].forEach(function(k){
     $("page-"+k).classList.toggle("on",k===n);
     $("tab_"+k).classList.toggle("on",k===n);
     $("tab_"+k).setAttribute("aria-selected",k===n?"true":"false");
@@ -465,6 +511,7 @@ function showPage(n){
 }
 $("tab_search").onclick=function(){showPage("search")};
 $("tab_logs").onclick=function(){showPage("logs")};
+$("tab_help").onclick=function(){showPage("help")};
 function renderHist(){
   var box=$("hlist");
   $("logBadge").textContent=hist.length;

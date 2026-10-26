@@ -148,7 +148,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <div class="g2" id="r_box" style="margin-top:12px" hidden></div>
 <hr>
 <label class="pick"><span class="carhead"><small>使用する車</small><span class="pill" id="pill"></span></span><select id="car"></select></label>
-<label class="pick" style="display:block;margin-top:12px"><small>運転者</small><input class="txt" id="driver" type="text" list="drivers" maxlength="20" placeholder="名前" autocomplete="off"></label>
+<label class="pick" style="display:block;margin-top:12px"><small>運転者(代表)</small><input class="txt" id="driver" type="text" list="drivers" maxlength="20" placeholder="名前" autocomplete="off"></label>
 </div>
 <datalist id="drivers"></datalist>
 
@@ -167,9 +167,9 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <section class="hist" aria-labelledby="hh">
 <div class="hhead"><h2 id="hh">履歴</h2><button class="link" id="clearAll" type="button">すべて削除</button></div>
 <div id="hlist"></div>
-<p class="note" id="storeNote" hidden>この画面では端末に保存できないため、履歴と運転者の選択は画面を閉じると消えます。</p>
+<p class="note" id="storeNote" hidden>この画面では端末に保存できないため、履歴と運転者(代表)の選択は画面を閉じると消えます。</p>
 </section>
-<p class="note">運転者の選択・履歴は、この端末のこのブラウザにだけ保存されます。</p>
+<p class="note">運転者(代表)の選択・履歴は、この端末のこのブラウザにだけ保存されます。</p>
 </div>
 <div id="page-help" class="page">
 <section class="help">
@@ -178,7 +178,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <li><b>走行日を選ぶ</b><span>はじめは前日になっています。日をまたぐときは、終了日も変えてください。</span></li>
 <li><b>行きの出発と到着を選ぶ</b><span>東部湯の丸は、路線も選びます。一覧にない場所は「手入力…」で入力できます。</span></li>
 <li><b>帰りを決める</b><span>「行きの逆」「自分で選ぶ」「なし」から選びます。</span></li>
-<li><b>使用する車を選ぶ</b><span>選ぶと、右上に車種区分が出ます。運転者の名前も入れてください。</span></li>
+<li><b>使用する車を選ぶ</b><span>選ぶと、右上に車種区分が出ます。運転者(代表)の名前も入れてください。</span></li>
 <li><b>通常か割引かを選ぶ</b><span>行きと帰りそれぞれで、料金のボタンを押して選びます。選んだ方が記録されます。</span></li>
 <li><b>「この条件で記録する」を押す</b><span>画面の下に「記録しました」と出れば完了です。履歴に残り、会社の表にも送られます。</span></li>
 </ol>
@@ -463,7 +463,7 @@ function renderHero(es,cs){
   if(car===null){
     h.innerHTML='<div class="hero"><div class="none"><b>使用する車を選んでください</b>選んだ車の料金を、ここに大きく表示します。</div></div>';return;
   }
-  var who='<div class="who">'+esc(carLabel(vehName,car))+(driver.trim()?'・運転者 '+esc(driver.trim()):'')+'</div>';
+  var who='<div class="who">'+esc(carLabel(vehName,car))+(driver.trim()?'・運転者(代表) '+esc(driver.trim()):'')+'</div>';
   if(allOK(cs)){
     h.innerHTML='<div class="hero">'+es.map(function(e,i){return legBlock(e,cs[i],es.length>1)}).join("")+who+
       '<div class="actions"><button class="btn primary" id="rec" type="button">この条件で記録する</button></div>'+
@@ -524,7 +524,7 @@ function renderHist(){
         (l.k?'<div class="disc">'+KN[l.k]+'</div>':'<div class="disc">割引 '+fmt(l.y)+'</div>');
     }).join("");
     var routes=[];x.legs.forEach(function(l){if(l.r&&routes.indexOf(l.r)<0)routes.push(l.r)});
-    var meta=[carLabel(x.vn,x.c)].concat(x.d?["運転者 "+x.d]:[]).concat(routes).concat([when(x.ts)]).map(esc).join("・");
+    var meta=[carLabel(x.vn,x.c)].concat(x.d?["運転者(代表) "+x.d]:[]).concat(routes).concat([when(x.ts)]).map(esc).join("・");
     return '<div class="hitem">'+(x.dt?'<div class="hdate">'+rangeText(x.dt[0],x.dt[1])+'</div>':'')+lines+'<div class="m">'+meta+'</div>'+
     '<div class="btns"><button class="btn" type="button" data-act="go" data-i="'+i+'">編集</button><button class="btn" type="button" data-act="del" data-i="'+i+'">削除</button></div></div>';
   }).join("");

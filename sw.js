@@ -1,5 +1,5 @@
 // 料金を直したら VERSION を変えると、利用者の端末のキャッシュも入れ替わる
-const VERSION = "toll-v1";
+const VERSION = "toll-v2";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", (e) => {
@@ -14,7 +14,7 @@ self.addEventListener("activate", (e) => {
 });
 // ネットにつながるときは最新を取り、つながらないときはキャッシュを使う
 self.addEventListener("fetch", (e) => {
-  if (e.request.method !== "GET") return;
+  if (e.request.method !== "GET" || new URL(e.request.url).origin !== self.location.origin) return;
   e.respondWith(
     fetch(e.request)
       .then((res) => {

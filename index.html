@@ -150,6 +150,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <hr>
 <label class="pick"><small>元請</small><select id="client"></select></label>
 <input class="txt" id="clientOther" type="text" maxlength="20" placeholder="元請の名前" autocomplete="off" style="display:none;margin-top:8px">
+<label class="pick" style="display:block;margin-top:12px"><span class="carhead"><small>使用する車</small><span class="pill" id="pill"></span></span><select id="car"></select></label>
 <label class="pick" style="display:block;margin-top:12px"><small>運転者(代表)</small><input class="txt" id="driver" type="text" list="drivers" maxlength="20" placeholder="名前" autocomplete="off"></label>
 <hr>
 <div class="legh" id="leghO">行き</div>
@@ -164,8 +165,6 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <div class="retinfo" id="retInfo"></div>
 </div>
 <div class="g2" id="r_box" style="margin-top:12px" hidden></div>
-<hr>
-<label class="pick"><span class="carhead"><small>使用する車</small><span class="pill" id="pill"></span></span><select id="car"></select></label>
 </div>
 <datalist id="drivers"></datalist>
 
@@ -208,7 +207,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <li><b>帰りを決める</b><span>「行きの逆」「自分で選ぶ」「なし」から選びます。</span></li>
 <li><b>使用する車を選ぶ</b><span>選ぶと、右上に車種区分が出ます。</span></li>
 <li><b>通常か割引かを選ぶ</b><span>行きと帰りそれぞれで、料金のボタンを押して選びます。選んだ方が記録されます。</span></li>
-<li><b>「この条件で記録する」を押す</b><span>入れ忘れや選び忘れがあると、「〇〇を選択してください」と出て、その欄に移動します。画面の下に「記録しました」と出れば完了です。履歴に残り、会社の表にも送られます。</span></li>
+<li><b>「この条件で記録する」を押す</b><span>記録すると、元請はそのままで、使用する車と運転者(代表)は空に戻ります。続けて入力するときは、車と運転者を入れ直してください。入れ忘れや選び忘れがあると、「〇〇を選択してください」と出て、その欄に移動します。画面の下に「記録しました」と出れば完了です。履歴に残り、会社の表にも送られます。</span></li>
 </ol>
 <h3>履歴</h3>
 <ul>
@@ -556,7 +555,7 @@ function renderHero(es,cs){
   if(car===null){
     h.innerHTML='<div class="hero"><div class="none"><b>使用する車を選んでください</b>選んだ車の料金を、ここに大きく表示します。</div>'+recBtn()+'</div>';$("rec").onclick=record;return;
   }
-  var who='<div class="who">'+esc(carLabel(vehName,car))+(driver.trim()?'・運転者(代表) '+esc(driver.trim()):'')+'</div>';
+  var who='<div class="who">'+(clientName()?esc(clientName())+'・':'')+esc(carLabel(vehName,car))+(driver.trim()?'・運転者(代表) '+esc(driver.trim()):'')+'</div>';
   if(allOK(cs)){
     h.innerHTML='<div class="hero">'+es.map(function(e,i){return legBlock(e,cs[i],es.length>1)}).join("")+who+
       recBtn()+'</div>';
@@ -732,6 +731,7 @@ function validate(){
   var es=effLegs(),cs=es.map(calcLeg);
   if(!client)return needFix("client","元請を選択してください");
   if(client==="__other"&&!clientOther.trim())return needFix("clientOther","元請の名前を入力してください");
+  if(car===null)return needFix("car","使用する車を選択してください");
   if(!driver.trim())return needFix("driver","運転者(代表)を入力してください");
   for(var i=0;i<es.length;i++){
     var e=es[i],p=e.key+"_";
@@ -739,7 +739,6 @@ function validate(){
     if(!e.to)return needFix(p+"t",e.label+"の到着を選択してください");
     if(e.from===e.to)return needFix(p+"t",e.label+"の出発と到着は、別の場所を選択してください");
   }
-  if(car===null)return needFix("car","使用する車を選択してください");
   for(var j=0;j<es.length;j++){
     if(cs[j].s==="na")return needFix(es[j].key+"_t",es[j].label+"は、この車では利用できない区間です","別の出発・到着か、別の車を選択してください");
     if(cs[j].s==="none")return needFix(es[j].key+"_price",es[j].label+"の通常料金を入力してください","料金のデータがない区間です");
@@ -774,7 +773,10 @@ function record(){
   }
   hist=hist.slice(0,50);
   editing=null;
-  client="";clientOther="";renderClient();   // 元請は、記録のたびに選び直す
+  // 続けて入力するとき: 元請はそのまま、運転者と車は入れ直す(直した記録のときは元請も選び直す)
+  if(fixing){client="";clientOther="";renderClient()}
+  driver="";$("driver").value="";lsSet("toll.driver","");
+  sel="";applySel();saveSel();renderCar();
   if(d.d){drivers=[d.d].concat(drivers.filter(function(n){return n!==d.d})).slice(0,10);lsSet("toll.drivers",JSON.stringify(drivers));renderDrivers()}
   saveHist();renderHist();render();
   var w=fixing?"修正しました":"記録しました";

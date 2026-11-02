@@ -150,6 +150,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <hr>
 <label class="pick"><small>元請</small><select id="client"></select></label>
 <input class="txt" id="clientOther" type="text" maxlength="20" placeholder="元請の名前" autocomplete="off" style="display:none;margin-top:8px">
+<label class="pick" style="display:block;margin-top:12px"><small>工番(工事番号)</small><input class="txt" id="job" type="text" maxlength="20" placeholder="例 AAA0000-01" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
 <label class="pick" style="display:block;margin-top:12px"><span class="carhead"><small>使用する車</small><span class="pill" id="pill"></span></span><select id="car"></select></label>
 <label class="pick" style="display:block;margin-top:12px"><small>運転者(代表)</small><input class="txt" id="driver" type="text" list="drivers" maxlength="20" placeholder="名前" autocomplete="off"></label>
 <hr>
@@ -205,6 +206,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <li><b>運転者(代表)を入れる</b><span>前に入れた名前が残っています。</span></li>
 <li><b>行きの出発と到着を選ぶ</b><span>東部湯の丸は、路線も選びます。一覧にない場所は「手入力…」で入力できます。</span></li>
 <li><b>帰りを決める</b><span>「行きの逆」「自分で選ぶ」「なし」から選びます。</span></li>
+<li><b>工番(工事番号)を入れる</b><span>AAA0000-01 のような形です。全角で入れても半角に、小文字は大文字になります。わからないときは、空のままでも記録できます。続けて記録しても、工番はそのまま残ります。</span></li>
 <li><b>使用する車を選ぶ</b><span>選ぶと、右上に車種区分が出ます。</span></li>
 <li><b>通常か割引かを選ぶ</b><span>行きと帰りそれぞれで、料金のボタンを押して選びます。選んだ方が記録されます。</span></li>
 <li><b>「この条件で記録する」を押す</b><span>記録すると、元請はそのままで、使用する車と運転者(代表)は空に戻ります。続けて入力するときは、車と運転者を入れ直してください。入れ忘れや選び忘れがあると、「〇〇を選択してください」と出て、その欄に移動します。画面の下に「記録しました」と出れば完了です。履歴に残り、会社の表にも送られます。</span></li>
@@ -401,6 +403,7 @@ function normItem(x){
     if(!ok||!num(x.n)||!num(x.y))return null;
     if(typeof x.vn!=="string")x.vn="";
     if(typeof x.g!=="string")x.g="";
+    if(typeof x.w!=="string")x.w="";
     if(x.sd!=="r")x.sd="";
     if(typeof x.id!=="string"||!x.id)delete x.id;
     if(!(Array.isArray(x.dt)&&x.dt.length===2&&x.dt.every(function(s){return typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s)})))x.dt=null;
@@ -627,7 +630,7 @@ function itemHTML(x,i,remoteItem){
       (l.k?'<div class="disc">'+KN[l.k]+'</div>':'<div class="disc">割引 '+fmt(l.y)+'</div>');
   }).join("");
   var routes=[];x.legs.forEach(function(l){if(l.r&&routes.indexOf(l.r)<0)routes.push(l.r)});
-  var meta=(x.g?[x.g]:[]).concat([carLabel(x.vn,x.c)]).concat(x.d?["運転者(代表) "+x.d]:[]).concat(routes).concat([when(x.ts)]).map(esc).join("・");
+  var meta=(x.g?[x.g]:[]).concat(x.w?[x.w]:[]).concat([carLabel(x.vn,x.c)]).concat(x.d?["運転者(代表) "+x.d]:[]).concat(routes).concat([when(x.ts)]).map(esc).join("・");
   return '<div class="hitem'+(editing&&editing.id===x.id?' editing':'')+'">'+(x.dt?'<div class="hdate">'+rangeText(x.dt[0],x.dt[1])+'</div>':'')+lines+'<div class="m">'+meta+'</div>'+
   '<div class="btns"><button class="btn" type="button" data-act="go" data-i="'+i+'">編集</button>'+(remoteItem?'':'<button class="btn" type="button" data-act="del" data-i="'+i+'">削除</button>')+'</div></div>';
 }
@@ -660,7 +663,7 @@ function rowToRec(r){
   else{legsA=[o||b];m="none";sd=o?"":"r"}
   var sn=0,sy=0;legsA.forEach(function(l){sn+=l.n;sy+=l.y});
   var fnt=legsA.length&&c<2?legsA.reduce(function(s,l){return s+l.h},0):null;
-  return {id:r.id,ts:Number(r.ts)||Date.now(),c:c,vn:r.car?String(r.car):"",g:r.client?String(r.client):"",d:r.driver?String(r.driver):"",m:m,sd:sd,
+  return {id:r.id,ts:Number(r.ts)||Date.now(),c:c,vn:r.car?String(r.car):"",g:r.client?String(r.client):"",w:r.job?String(r.job):"",d:r.driver?String(r.driver):"",m:m,sd:sd,
     dt:(ds.test(r.from||"")&&ds.test(r.to||""))?[r.from,r.to]:null,legs:legsA,n:sn,h:fnt,y:sy};
 }
 function renderAll(){
@@ -727,11 +730,11 @@ function curRecord(){
   var es=effLegs(),cs=es.map(calcLeg);
   if(!allOK(cs))return null;
   var t=totals(cs);
-  return {c:car,vn:vehName,g:clientName(),d:driver.trim(),m:retMode,sd:(retMode==="none"&&oneSide==="r")?"r":"",dt:[d1,d2],
+  return {c:car,vn:vehName,g:clientName(),w:jobVal(),d:driver.trim(),m:retMode,sd:(retMode==="none"&&oneSide==="r")?"r":"",dt:[d1,d2],
     legs:es.map(function(e,i){var k=kindOf(e,cs[i]);return {f:e.from,t:e.to,r:e.route||"",n:cs[i].n,h:cs[i].h,y:cs[i].y,u:!!cs[i].manual,k:k,p:pick(cs[i],k)}}),
     n:t.n,h:t.h,y:t.y};
 }
-function keyOf(x){return JSON.stringify([x.m,x.sd||"",x.c,x.vn||"",x.g||"",x.d,x.dt||null,x.legs.map(function(l){return [l.f,l.t,l.r,l.k||""]})])}
+function keyOf(x){return JSON.stringify([x.m,x.sd||"",x.c,x.vn||"",x.g||"",x.w||"",x.d,x.dt||null,x.legs.map(function(l){return [l.f,l.t,l.r,l.k||""]})])}
 function needFix(id,text,sub){
   var e=$(id);
   document.querySelectorAll(".need").forEach(function(n){n.classList.remove("need")});
@@ -786,7 +789,7 @@ function record(){
   hist=hist.slice(0,50);
   editing=null;
   // 続けて入力するとき: 元請はそのまま、運転者と車は入れ直す(直した記録のときは元請も選び直す)
-  if(fixing){client="";clientOther="";renderClient()}
+  if(fixing){client="";clientOther="";renderClient();setJob("")}
   driver="";$("driver").value="";lsSet("toll.driver","");
   sel="";applySel();saveSel();renderCar();
   if(d.d){drivers=[d.d].concat(drivers.filter(function(n){return n!==d.d})).slice(0,10);lsSet("toll.drivers",JSON.stringify(drivers));renderDrivers()}
@@ -800,7 +803,7 @@ function record(){
 function sheetRow(d){
   var o=d.legs[0],b=d.legs[1]||null;
   if(d.sd==="r"){b=o;o=null}   // 帰りだけの記録は、帰りの列に入れる
-  return {id:d.id,ts:d.ts,from:d.dt?d.dt[0]:"",to:d.dt?d.dt[1]:"",driver:d.d,car:d.vn,client:d.g||"",cls:CLASSES[d.c][0],
+  return {id:d.id,ts:d.ts,from:d.dt?d.dt[0]:"",to:d.dt?d.dt[1]:"",driver:d.d,car:d.vn,client:d.g||"",job:d.w||"",cls:CLASSES[d.c][0],
     o_f:o?o.f:"",o_t:o?o.t:"",o_r:o?o.r:"",o_k:o?KN[o.k||"n"]:"",o_p:o?(o.k?o.p:o.n):"",
     r_f:b?b.f:"",r_t:b?b.t:"",r_r:b?b.r:"",r_k:b?KN[b.k||"n"]:"",r_p:b?(b.k?b.p:b.n):""};
 }
@@ -816,9 +819,9 @@ function sendSheet(d,fixing,after){
 function goto(x,remoteItem){
   var a=x.legs[0];
   if(!x.id){x.id=newRid();saveHist()}
-  editing={id:x.id,ts:x.ts,remote:!!remoteItem,prev:remoteItem?{driver:driver,sel:sel,client:client,clientOther:clientOther}:null};
+  editing={id:x.id,ts:x.ts,remote:!!remoteItem,prev:remoteItem?{driver:driver,sel:sel,client:client,clientOther:clientOther,job:jobVal()}:null};
   driver=x.d||"";$("driver").value=driver;lsSet("toll.driver",driver);
-  setClientByName(x.g);
+  setClientByName(x.g);setJob(x.w||"");
   var fi=-1;FLEET.forEach(function(f,i){if(f[0]===x.vn&&f[1]===x.c)fi=i});
   sel=fi>=0?"f:"+fi:"";applySel();saveSel();renderCar();
   retMode=(x.m==="own"||x.m==="none")?x.m:"rev";
@@ -844,6 +847,13 @@ $("clearAll").onclick=function(){
   if(!armed){armed=true;b.textContent="もう一度押すと、すべて削除";setTimeout(function(){armed=false;b.textContent="すべて削除"},3000);return}
   armed=false;b.textContent="すべて削除";hist=[];saveHist();renderHist();
 };
+/* ---- 工番(工事番号): 全角は半角に、英字は大文字に、使えない文字は取り除く ---- */
+function normJob(v){return String(v||"").normalize("NFKC").toUpperCase().replace(/[‐‑‒–—―−ー]/g,"-").replace(/[^A-Z0-9\-]/g,"").slice(0,20)}
+function jobVal(){return normJob($("job").value)}
+function setJob(v){$("job").value=normJob(v)}
+$("job").addEventListener("input",function(ev){if(ev.isComposing)return;var c=normJob(this.value);if(c!==this.value)this.value=c;render()});
+$("job").addEventListener("compositionend",function(){this.value=normJob(this.value);render()});
+$("job").addEventListener("change",function(){this.value=normJob(this.value)});
 var CLIENT_FROM={"NDK高崎":"東部湯の丸","NDK長野":"梓川スマート","NDK松本":"塩尻"};   // 元請を選ぶと、行きの出発を自動で選ぶ(あとから変えられる)
 $("client").onchange=function(){client=this.value;if(client!=="__other")clientOther="";saveClient();renderClient();
   var f=CLIENT_FROM[client];
@@ -855,7 +865,7 @@ function restorePrev(){
   if(editing&&editing.remote&&editing.prev){
     driver=editing.prev.driver;$("driver").value=driver;lsSet("toll.driver",driver);
     sel=editing.prev.sel;applySel();saveSel();renderCar();
-    client=editing.prev.client;clientOther=editing.prev.clientOther;saveClient();renderClient();
+    client=editing.prev.client;clientOther=editing.prev.clientOther;saveClient();renderClient();setJob(editing.prev.job||"");
   }
 }
 $("cancelEdit").onclick=function(){restorePrev();editing=null;render();renderHist();renderAll()};

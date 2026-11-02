@@ -102,6 +102,10 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 .tabs{display:flex;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:14px}
 .tab{flex:1;min-height:46px;border:0;background:none;color:var(--mute);font:inherit;font-weight:700;cursor:pointer}
 .tab.on{background:var(--sign);color:#fff}
+.pendtag{display:inline-block;background:#b45309;color:#fff;font-weight:700;border-radius:6px;padding:2px 8px;font-size:.8rem;margin-bottom:6px}
+.unsent{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#b45309;color:#fff;border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:.95rem;font-weight:700}
+.unsent .btn{flex:none;white-space:nowrap}
+.tab .badge.warn{background:#b91c1c;color:#fff}
 .tab .badge{background:#f0b400;color:#000;border-radius:10px;padding:1px 7px;font-size:.78rem;margin-left:4px}
 .chk{display:flex;align-items:center;gap:10px;min-height:44px;font-weight:700;font-size:1.05rem;cursor:pointer}
 .chk input{width:22px;height:22px;accent-color:#f0b400}
@@ -150,7 +154,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <hr>
 <label class="pick"><small>元請</small><select id="client"></select></label>
 <input class="txt" id="clientOther" type="text" maxlength="20" placeholder="元請の名前" autocomplete="off" style="display:none;margin-top:8px">
-<label class="pick" style="display:block;margin-top:12px"><small>工番(工事番号)</small><input class="txt" id="job" type="text" maxlength="20" placeholder="例 AAA0000-01" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
+<label class="pick" style="display:block;margin-top:12px"><small>工番</small><input class="txt" id="job" type="text" maxlength="20" placeholder="例 AAA0000-01" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
 <label class="pick" style="display:block;margin-top:12px"><span class="carhead"><small>使用する車</small><span class="pill" id="pill"></span></span><select id="car"></select></label>
 <label class="pick" style="display:block;margin-top:12px"><small>運転者(代表)</small><input class="txt" id="driver" type="text" list="drivers" maxlength="20" placeholder="名前" autocomplete="off"></label>
 <hr>
@@ -186,6 +190,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <div class="seg" id="histSeg" hidden><button class="on" id="seg_mine" type="button">この端末の記録</button><button id="seg_all" type="button">全員の記録</button></div>
 <div id="mineBox">
 <div class="hhead"><h2 id="hh">履歴</h2><button class="link" id="clearAll" type="button">すべて削除</button></div>
+<div class="unsent" id="unsent" hidden><span>会社の表に送れていない記録が <b id="unsentN">0</b> 件あります</span><button class="btn primary" id="resendAll" type="button">まとめて送り直す</button></div>
 <div id="hlist"></div>
 </div>
 <div id="allBox" hidden>
@@ -206,7 +211,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <li><b>運転者(代表)を入れる</b><span>前に入れた名前が残っています。</span></li>
 <li><b>行きの出発と到着を選ぶ</b><span>東部湯の丸は、路線も選びます。一覧にない場所は「手入力…」で入力できます。</span></li>
 <li><b>帰りを決める</b><span>「行きの逆」「自分で選ぶ」「なし」から選びます。</span></li>
-<li><b>工番(工事番号)を入れる</b><span>AAA0000-01 のような形です。全角で入れても半角に、小文字は大文字になります。わからないときは、空のままでも記録できます。続けて記録しても、工番はそのまま残ります。</span></li>
+<li><b>工番を入れる</b><span>AAA0000-01 のような形です。全角で入れても半角に、小文字は大文字になります。わからないときは、空のままでも記録できます。続けて記録しても、工番はそのまま残ります。</span></li>
 <li><b>使用する車を選ぶ</b><span>選ぶと、右上に車種区分が出ます。</span></li>
 <li><b>通常か割引かを選ぶ</b><span>行きと帰りそれぞれで、料金のボタンを押して選びます。選んだ方が記録されます。</span></li>
 <li><b>「この条件で記録する」を押す</b><span>記録すると、元請はそのままで、使用する車と運転者(代表)は空に戻ります。続けて入力するときは、車と運転者を入れ直してください。入れ忘れや選び忘れがあると、「〇〇を選択してください」と出て、その欄に移動します。画面の下に「記録しました」と出れば完了です。履歴に残り、会社の表にも送られます。</span></li>
@@ -244,7 +249,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 </ul>
 <h3>困ったとき</h3>
 <ul>
-<li>「会社の表には送れませんでした」と出たときは、履歴には残っていますが、会社の表には入っていません。管理者に伝えてください。</li>
+<li>「会社の表には送れませんでした」と出たときは、履歴に「未送信」の印が付きます。電波のよい場所で、履歴の「送り直す」(またはまとめて送り直す)を押してください。送れると、印が消えます。</li>
 <li>料金が出ないときは、「手入力…」で通常料金を入力してください。</li>
 </ul>
 </section>
@@ -404,6 +409,7 @@ function normItem(x){
     if(typeof x.vn!=="string")x.vn="";
     if(typeof x.g!=="string")x.g="";
     if(typeof x.w!=="string")x.w="";
+    if(x.pend!==true)delete x.pend;
     if(x.sd!=="r")x.sd="";
     if(typeof x.id!=="string"||!x.id)delete x.id;
     if(!(Array.isArray(x.dt)&&x.dt.length===2&&x.dt.every(function(s){return typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s)})))x.dt=null;
@@ -631,12 +637,15 @@ function itemHTML(x,i,remoteItem){
   }).join("");
   var routes=[];x.legs.forEach(function(l){if(l.r&&routes.indexOf(l.r)<0)routes.push(l.r)});
   var meta=(x.g?[x.g]:[]).concat(x.w?[x.w]:[]).concat([carLabel(x.vn,x.c)]).concat(x.d?["運転者(代表) "+x.d]:[]).concat(routes).concat([when(x.ts)]).map(esc).join("・");
-  return '<div class="hitem'+(editing&&editing.id===x.id?' editing':'')+'">'+(x.dt?'<div class="hdate">'+rangeText(x.dt[0],x.dt[1])+'</div>':'')+lines+'<div class="m">'+meta+'</div>'+
-  '<div class="btns"><button class="btn" type="button" data-act="go" data-i="'+i+'">編集</button>'+(remoteItem?'':'<button class="btn" type="button" data-act="del" data-i="'+i+'">削除</button>')+'</div></div>';
+  return '<div class="hitem'+(editing&&editing.id===x.id?' editing':'')+'">'+(!remoteItem&&x.pend?'<div class="pendtag">未送信</div>':'')+(x.dt?'<div class="hdate">'+rangeText(x.dt[0],x.dt[1])+'</div>':'')+lines+'<div class="m">'+meta+'</div>'+
+  '<div class="btns"><button class="btn" type="button" data-act="go" data-i="'+i+'">編集</button>'+(remoteItem?'':(x.pend?'<button class="btn primary" type="button" data-act="send" data-i="'+i+'">送り直す</button>':'')+'<button class="btn" type="button" data-act="del" data-i="'+i+'">削除</button>')+'</div></div>';
 }
 function renderHist(){
   var box=$("hlist");
   $("logBadge").textContent=hist.length;
+  var np=hist.filter(function(x){return x.pend}).length;
+  $("logBadge").classList.toggle("warn",np>0);
+  $("unsent").hidden=np===0;$("unsentN").textContent=np;
   $("clearAll").style.visibility=hist.length?"visible":"hidden";
   if(!hist.length){box.innerHTML='<div class="empty">「この条件で記録する」を押すと、ここに残ります。</div>';return}
   box.innerHTML=hist.map(function(x,i){return itemHTML(x,i,false)}).join("");
@@ -807,15 +816,34 @@ function sheetRow(d){
     o_f:o?o.f:"",o_t:o?o.t:"",o_r:o?o.r:"",o_k:o?KN[o.k||"n"]:"",o_p:o?(o.k?o.p:o.n):"",
     r_f:b?b.f:"",r_t:b?b.t:"",r_r:b?b.r:"",r_k:b?KN[b.k||"n"]:"",r_p:b?(b.k?b.p:b.n):""};
 }
-function sendSheet(d,fixing,after){
+function markSent(d,ok){
+  // この端末の履歴にある記録なら、「未送信」の印を付けたり外したりする
+  var h=null;hist.forEach(function(x){if(x.id===d.id)h=x});
+  if(!h)return false;
+  if(ok)delete h.pend;else h.pend=true;
+  saveHist();renderHist();
+  return true;
+}
+function sendSheet(d,fixing,after,resend){
   if(!SHEET_URL)return;
   var row=sheetRow(d);row.fix=!!fixing;
+  function okf(){
+    markSent(d,true);
+    if(resend){toast("送り直しました","会社の表に送りました");return}
+    say("履歴に記録し、会社の表にも送りました");toast(fixing?"修正しました":"記録しました",fixing?"会社の表も直しました":"会社の表にも送りました");if(after)after();
+  }
+  function ngf(){
+    var inHist=markSent(d,false);
+    if(resend){toast("まだ送れませんでした","電波のよい場所で、もう一度「送り直す」を押してください","warn");return}
+    if(!inHist){toast("修正は送れませんでした","もう一度、「全員の記録」の「編集」からやり直してください","warn");return}
+    say("履歴に記録しました(会社の表には送れませんでした)");
+    toast(fixing?"修正しました":"記録しました","会社の表には送れませんでした。履歴の「送り直す」で、あとから送れます","warn");
+  }
   try{
-    fetch(SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(row)})
-      .then(function(){say("履歴に記録し、会社の表にも送りました");toast(fixing?"修正しました":"記録しました",fixing?"会社の表も直しました":"会社の表にも送りました");if(after)after()},
-            function(){say("履歴に記録しました(会社の表には送れませんでした)");toast(fixing?"修正しました":"記録しました","会社の表には送れませんでした(履歴には保存済み)","warn")});
-  }catch(e){say("履歴に記録しました(会社の表には送れませんでした)");toast(fixing?"修正しました":"記録しました","会社の表には送れませんでした(履歴には保存済み)","warn")}
+    fetch(SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(row)}).then(okf,ngf);
+  }catch(e){ngf()}
 }
+function resendOne(x){sendSheet(x,true,null,true)}
 function goto(x,remoteItem){
   var a=x.legs[0];
   if(!x.id){x.id=newRid();saveHist()}
@@ -839,9 +867,14 @@ function goto(x,remoteItem){
 $("hlist").addEventListener("click",function(ev){
   var b=ev.target.closest("button[data-act]");if(!b)return;
   var i=parseInt(b.getAttribute("data-i"),10),x=hist[i];if(!x)return;
-  if(b.getAttribute("data-act")==="go"){goto(x)}
+  var act=b.getAttribute("data-act");
+  if(act==="go"){goto(x)}
+  else if(act==="send"){resendOne(x)}
   else{hist.splice(i,1);saveHist();renderHist()}
 });
+$("resendAll").onclick=function(){
+  hist.filter(function(x){return x.pend}).forEach(function(x,k){setTimeout(function(){resendOne(x)},k*400)});
+};
 $("clearAll").onclick=function(){
   var b=this;
   if(!armed){armed=true;b.textContent="もう一度押すと、すべて削除";setTimeout(function(){armed=false;b.textContent="すべて削除"},3000);return}

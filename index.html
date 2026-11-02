@@ -154,7 +154,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <hr>
 <label class="pick"><small>元請</small><select id="client"></select></label>
 <input class="txt" id="clientOther" type="text" maxlength="20" placeholder="元請の名前" autocomplete="off" style="display:none;margin-top:8px">
-<label class="pick" style="display:block;margin-top:12px"><small>工番</small><input class="txt" id="job" type="text" maxlength="20" placeholder="例 AAA0000-01" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
+<label class="pick" style="display:block;margin-top:12px"><small>工番</small><input class="txt" id="job" type="text" maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
 <label class="pick" style="display:block;margin-top:12px"><span class="carhead"><small>使用する車</small><span class="pill" id="pill"></span></span><select id="car"></select></label>
 <label class="pick" style="display:block;margin-top:12px"><small>運転者(代表)</small><input class="txt" id="driver" type="text" list="drivers" maxlength="20" placeholder="名前" autocomplete="off"></label>
 <hr>
@@ -211,7 +211,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <li><b>運転者(代表)を入れる</b><span>前に入れた名前が残っています。</span></li>
 <li><b>行きの出発と到着を選ぶ</b><span>東部湯の丸は、路線も選びます。一覧にない場所は「手入力…」で入力できます。</span></li>
 <li><b>帰りを決める</b><span>「行きの逆」「自分で選ぶ」「なし」から選びます。</span></li>
-<li><b>工番を入れる</b><span>AAA0000-01 のような形です。全角で入れても半角に、小文字は大文字になります。わからないときは、空のままでも記録できます。続けて記録しても、工番はそのまま残ります。</span></li>
+<li><b>工番を入れる</b><span>全角で入れても半角に、小文字は大文字になります。わからないときは、空のままでも記録できます。続けて記録しても、工番はそのまま残ります。</span></li>
 <li><b>使用する車を選ぶ</b><span>選ぶと、右上に車種区分が出ます。</span></li>
 <li><b>通常か割引かを選ぶ</b><span>行きと帰りそれぞれで、料金のボタンを押して選びます。選んだ方が記録されます。</span></li>
 <li><b>「この条件で記録する」を押す</b><span>記録すると、元請はそのままで、使用する車と運転者(代表)は空に戻ります。続けて入力するときは、車と運転者を入れ直してください。入れ忘れや選び忘れがあると、「〇〇を選択してください」と出て、その欄に移動します。画面の下に「記録しました」と出れば完了です。履歴に残り、会社の表にも送られます。</span></li>

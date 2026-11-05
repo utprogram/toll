@@ -154,7 +154,9 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <hr>
 <label class="pick"><small>元請</small><select id="client"></select></label>
 <input class="txt" id="clientOther" type="text" maxlength="20" placeholder="元請の名前" autocomplete="off" style="display:none;margin-top:8px">
-<label class="pick" style="display:block;margin-top:12px"><small>工番</small><input class="txt" id="job" type="text" maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
+<label class="pick" style="display:block;margin-top:12px"><small>工番</small><input class="txt" id="job" type="text" maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false" list="jobList"></label>
+<label class="pick" style="display:block;margin-top:12px"><small>現場名</small><input class="txt" id="site" type="text" maxlength="30" autocomplete="off" spellcheck="false" list="siteList"></label>
+<datalist id="jobList"></datalist><datalist id="siteList"></datalist>
 <label class="pick" style="display:block;margin-top:12px"><span class="carhead"><small>使用する車</small><span class="pill" id="pill"></span></span><select id="car"></select></label>
 <label class="pick" style="display:block;margin-top:12px"><small>運転者(代表)</small><input class="txt" id="driver" type="text" list="drivers" maxlength="20" placeholder="名前" autocomplete="off"></label>
 <hr>
@@ -212,6 +214,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <li><b>行きの出発と到着を選ぶ</b><span>東部湯の丸は、路線も選びます。一覧にない場所は「手入力…」で入力できます。</span></li>
 <li><b>帰りを決める</b><span>「行きの逆」「自分で選ぶ」「なし」から選びます。</span></li>
 <li><b>工番を入れる</b><span>全角で入れても半角に、小文字は大文字になります。わからないときは、空のままでも記録できます。続けて記録しても、工番はそのまま残ります。</span></li>
+<li><b>現場名を入れる</b><span>工番を入れると現場名が、現場名を選ぶと工番が、自動で入ります。入るのは、これまでに記録された組み合わせです。新しい組み合わせは、記録すると、次から全員に出ます。自動で入ったあとも、直せます。</span></li>
 <li><b>使用する車を選ぶ</b><span>選ぶと、右上に車種区分が出ます。</span></li>
 <li><b>通常か割引かを選ぶ</b><span>行きと帰りそれぞれで、料金のボタンを押して選びます。選んだ方が記録されます。</span></li>
 <li><b>「この条件で記録する」を押す</b><span>記録すると、元請はそのままで、使用する車と運転者(代表)は空に戻ります。続けて入力するときは、車と運転者を入れ直してください。入れ忘れや選び忘れがあると、「〇〇を選択してください」と出て、その欄に移動します。画面の下に「記録しました」と出れば完了です。履歴に残り、会社の表にも送られます。</span></li>
@@ -409,6 +412,7 @@ function normItem(x){
     if(typeof x.vn!=="string")x.vn="";
     if(typeof x.g!=="string")x.g="";
     if(typeof x.w!=="string")x.w="";
+    if(typeof x.s!=="string")x.s="";
     if(x.pend!==true)delete x.pend;
     if(x.sd!=="r")x.sd="";
     if(typeof x.id!=="string"||!x.id)delete x.id;
@@ -636,7 +640,7 @@ function itemHTML(x,i,remoteItem){
       (l.k?'<div class="disc">'+KN[l.k]+'</div>':'<div class="disc">割引 '+fmt(l.y)+'</div>');
   }).join("");
   var routes=[];x.legs.forEach(function(l){if(l.r&&routes.indexOf(l.r)<0)routes.push(l.r)});
-  var meta=(x.g?[x.g]:[]).concat(x.w?[x.w]:[]).concat([carLabel(x.vn,x.c)]).concat(x.d?["運転者(代表) "+x.d]:[]).concat(routes).concat([when(x.ts)]).map(esc).join("・");
+  var meta=(x.g?[x.g]:[]).concat(x.w?[x.w]:[]).concat(x.s?[x.s]:[]).concat([carLabel(x.vn,x.c)]).concat(x.d?["運転者(代表) "+x.d]:[]).concat(routes).concat([when(x.ts)]).map(esc).join("・");
   return '<div class="hitem'+(editing&&editing.id===x.id?' editing':'')+'">'+(!remoteItem&&x.pend?'<div class="pendtag">未送信</div>':'')+(x.dt?'<div class="hdate">'+rangeText(x.dt[0],x.dt[1])+'</div>':'')+lines+'<div class="m">'+meta+'</div>'+
   '<div class="btns"><button class="btn" type="button" data-act="go" data-i="'+i+'">編集</button>'+(remoteItem?'':(x.pend?'<button class="btn primary" type="button" data-act="send" data-i="'+i+'">送り直す</button>':'')+'<button class="btn" type="button" data-act="del" data-i="'+i+'">削除</button>')+'</div></div>';
 }
@@ -672,7 +676,7 @@ function rowToRec(r){
   else{legsA=[o||b];m="none";sd=o?"":"r"}
   var sn=0,sy=0;legsA.forEach(function(l){sn+=l.n;sy+=l.y});
   var fnt=legsA.length&&c<2?legsA.reduce(function(s,l){return s+l.h},0):null;
-  return {id:r.id,ts:Number(r.ts)||Date.now(),c:c,vn:r.car?String(r.car):"",g:r.client?String(r.client):"",w:r.job?String(r.job):"",d:r.driver?String(r.driver):"",m:m,sd:sd,
+  return {id:r.id,ts:Number(r.ts)||Date.now(),c:c,vn:r.car?String(r.car):"",g:r.client?String(r.client):"",w:r.job?String(r.job):"",s:r.site?String(r.site):"",d:r.driver?String(r.driver):"",m:m,sd:sd,
     dt:(ds.test(r.from||"")&&ds.test(r.to||""))?[r.from,r.to]:null,legs:legsA,n:sn,h:fnt,y:sy};
 }
 function renderAll(){
@@ -688,7 +692,7 @@ function loadRemote(){
   var u=SHEET_URL+(SHEET_URL.indexOf("?")<0?"?":"&")+"t="+Date.now();
   try{
     fetch(u,{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){
-      remote.recs=(j&&Array.isArray(j.rows)?j.rows:[]).map(rowToRec).filter(Boolean);remote.loaded=true;
+      remote.recs=(j&&Array.isArray(j.rows)?j.rows:[]).map(rowToRec).filter(Boolean);remote.loaded=true;buildPairs();
     }).catch(function(){remote.err="読み込めませんでした"}).then(function(){remote.loading=false;renderAll()});
   }catch(e){remote.loading=false;remote.err="読み込めませんでした";renderAll()}
 }
@@ -739,11 +743,11 @@ function curRecord(){
   var es=effLegs(),cs=es.map(calcLeg);
   if(!allOK(cs))return null;
   var t=totals(cs);
-  return {c:car,vn:vehName,g:clientName(),w:jobVal(),d:driver.trim(),m:retMode,sd:(retMode==="none"&&oneSide==="r")?"r":"",dt:[d1,d2],
+  return {c:car,vn:vehName,g:clientName(),w:jobVal(),s:siteVal(),d:driver.trim(),m:retMode,sd:(retMode==="none"&&oneSide==="r")?"r":"",dt:[d1,d2],
     legs:es.map(function(e,i){var k=kindOf(e,cs[i]);return {f:e.from,t:e.to,r:e.route||"",n:cs[i].n,h:cs[i].h,y:cs[i].y,u:!!cs[i].manual,k:k,p:pick(cs[i],k)}}),
     n:t.n,h:t.h,y:t.y};
 }
-function keyOf(x){return JSON.stringify([x.m,x.sd||"",x.c,x.vn||"",x.g||"",x.w||"",x.d,x.dt||null,x.legs.map(function(l){return [l.f,l.t,l.r,l.k||""]})])}
+function keyOf(x){return JSON.stringify([x.m,x.sd||"",x.c,x.vn||"",x.g||"",x.w||"",x.s||"",x.d,x.dt||null,x.legs.map(function(l){return [l.f,l.t,l.r,l.k||""]})])}
 function needFix(id,text,sub){
   var e=$(id);
   document.querySelectorAll(".need").forEach(function(n){n.classList.remove("need")});
@@ -798,11 +802,11 @@ function record(){
   hist=hist.slice(0,50);
   editing=null;
   // 続けて入力するとき: 元請はそのまま、運転者と車は入れ直す(直した記録のときは元請も選び直す)
-  if(fixing){client="";clientOther="";renderClient();setJob("")}
+  if(fixing){client="";clientOther="";renderClient();setJob("");setSite("")}
   driver="";$("driver").value="";lsSet("toll.driver","");
   sel="";applySel();saveSel();renderCar();
   if(d.d){drivers=[d.d].concat(drivers.filter(function(n){return n!==d.d})).slice(0,10);lsSet("toll.drivers",JSON.stringify(drivers));renderDrivers()}
-  saveHist();renderHist();render();
+  saveHist();renderHist();buildPairs();render();
   var w=fixing?"修正しました":"記録しました";
   say(store?"履歴に"+w:"履歴に"+w+"(この画面では保存されません)");
   if(store)toast(w,SHEET_URL?"会社の表に送っています…":"履歴に保存しました");else toast(w,"この画面では保存されません(画面を閉じると消えます)","warn");
@@ -812,7 +816,7 @@ function record(){
 function sheetRow(d){
   var o=d.legs[0],b=d.legs[1]||null;
   if(d.sd==="r"){b=o;o=null}   // 帰りだけの記録は、帰りの列に入れる
-  return {id:d.id,ts:d.ts,from:d.dt?d.dt[0]:"",to:d.dt?d.dt[1]:"",driver:d.d,car:d.vn,client:d.g||"",job:d.w||"",cls:CLASSES[d.c][0],
+  return {id:d.id,ts:d.ts,from:d.dt?d.dt[0]:"",to:d.dt?d.dt[1]:"",driver:d.d,car:d.vn,client:d.g||"",job:d.w||"",site:d.s||"",cls:CLASSES[d.c][0],
     o_f:o?o.f:"",o_t:o?o.t:"",o_r:o?o.r:"",o_k:o?KN[o.k||"n"]:"",o_p:o?(o.k?o.p:o.n):"",
     r_f:b?b.f:"",r_t:b?b.t:"",r_r:b?b.r:"",r_k:b?KN[b.k||"n"]:"",r_p:b?(b.k?b.p:b.n):""};
 }
@@ -847,9 +851,9 @@ function resendOne(x){sendSheet(x,true,null,true)}
 function goto(x,remoteItem){
   var a=x.legs[0];
   if(!x.id){x.id=newRid();saveHist()}
-  editing={id:x.id,ts:x.ts,remote:!!remoteItem,prev:remoteItem?{driver:driver,sel:sel,client:client,clientOther:clientOther,job:jobVal()}:null};
+  editing={id:x.id,ts:x.ts,remote:!!remoteItem,prev:remoteItem?{driver:driver,sel:sel,client:client,clientOther:clientOther,job:jobVal(),site:siteVal()}:null};
   driver=x.d||"";$("driver").value=driver;lsSet("toll.driver",driver);
-  setClientByName(x.g);setJob(x.w||"");
+  setClientByName(x.g);setJob(x.w||"");setSite(x.s||"");
   var fi=-1;FLEET.forEach(function(f,i){if(f[0]===x.vn&&f[1]===x.c)fi=i});
   sel=fi>=0?"f:"+fi:"";applySel();saveSel();renderCar();
   retMode=(x.m==="own"||x.m==="none")?x.m:"rev";
@@ -883,10 +887,62 @@ $("clearAll").onclick=function(){
 /* ---- 工番(工事番号): 全角は半角に、英字は大文字に、使えない文字は取り除く ---- */
 function normJob(v){return String(v||"").normalize("NFKC").toUpperCase().replace(/[‐‑‒–—―−ー]/g,"-").replace(/[^A-Z0-9\-]/g,"").slice(0,20)}
 function jobVal(){return normJob($("job").value)}
-function setJob(v){$("job").value=normJob(v)}
+function setJob(v){$("job").value=normJob(v);jobAuto=false}
 $("job").addEventListener("input",function(ev){if(ev.isComposing)return;var c=normJob(this.value);if(c!==this.value)this.value=c;render()});
 $("job").addEventListener("compositionend",function(){this.value=normJob(this.value);render()});
 $("job").addEventListener("change",function(){this.value=normJob(this.value)});
+/* ---- 工番 ⇔ 現場名: これまでの記録(全員分+この端末)から組み合わせを覚えて、片方を入れるともう片方が自動で入る ---- */
+var pairs={byJob:{},bySite:{}},jobAuto=false,siteAuto=false;
+function siteVal(){return $("site").value.replace(/\s+/g," ").trim().slice(0,30)}
+function setSite(v){$("site").value=String(v||"").replace(/\s+/g," ").trim().slice(0,30);siteAuto=false}
+function buildPairs(){
+  var P={byJob:{},bySite:{}};
+  function add(w,s){
+    if(!w||!s)return;
+    P.byJob[w]=s;
+    var a=P.bySite[s]||(P.bySite[s]=[]);
+    var k=a.indexOf(w);if(k>=0)a.splice(k,1);
+    a.push(w);
+  }
+  try{var c=JSON.parse(lsGet("toll.pairs")||"[]");if(Array.isArray(c))c.forEach(function(e){if(Array.isArray(e))add(e[0],e[1])})}catch(e){}
+  var all=(remote.recs||[]).concat(hist).filter(function(x){return x&&x.w&&x.s});
+  all.sort(function(a,b){return (a.ts||0)-(b.ts||0)});
+  all.forEach(function(x){add(x.w,x.s)});
+  pairs=P;
+  try{
+    var list=[];Object.keys(P.byJob).forEach(function(w){list.push([w,P.byJob[w]])});
+    lsSet("toll.pairs",JSON.stringify(list.slice(-500)));
+  }catch(e){}
+  refreshPairLists();
+}
+function refreshPairLists(){
+  var jl=$("jobList"),sl=$("siteList"),s=siteVal(),js=pairs.bySite[s];
+  var jobs=(js&&js.length)?js.slice().reverse():Object.keys(pairs.byJob).sort();
+  jl.innerHTML=jobs.map(function(w){return '<option value="'+esc(w)+'" label="'+esc(pairs.byJob[w]||"")+'"></option>'}).join("");
+  sl.innerHTML=Object.keys(pairs.bySite).sort().map(function(n){return '<option value="'+esc(n)+'"></option>'}).join("");
+}
+function fillFromJob(){
+  var j=jobVal(),s=pairs.byJob[j];
+  if(j&&s){if(siteVal()===""||siteAuto){$("site").value=s;siteAuto=true}}
+  else if(siteAuto){$("site").value="";siteAuto=false}
+  refreshPairLists();
+}
+function fillFromSite(){
+  var s=siteVal(),js=pairs.bySite[s];
+  if(s&&js&&js.length){
+    if(jobVal()===""||jobAuto){
+      if(js.length===1){$("job").value=js[0];jobAuto=true}
+      else if(js.indexOf(jobVal())<0){$("job").value="";jobAuto=false}   // 前に自動で入れた工番が、この現場のものでなければ消す
+    }
+  }else if(jobAuto){$("job").value="";jobAuto=false}
+  refreshPairLists();
+}
+$("job").addEventListener("input",function(ev){jobAuto=false;if(!ev.isComposing)fillFromJob()});
+$("job").addEventListener("compositionend",fillFromJob);
+$("job").addEventListener("change",fillFromJob);
+$("site").addEventListener("input",function(ev){siteAuto=false;if(!ev.isComposing)fillFromSite()});
+$("site").addEventListener("compositionend",fillFromSite);
+$("site").addEventListener("change",function(){this.value=siteVal();fillFromSite()});
 var CLIENT_FROM={"NDK高崎":"東部湯の丸","NDK長野":"梓川スマート","NDK松本":"塩尻"};   // 元請を選ぶと、行きの出発を自動で選ぶ(あとから変えられる)
 $("client").onchange=function(){client=this.value;if(client!=="__other")clientOther="";saveClient();renderClient();
   var f=CLIENT_FROM[client];
@@ -898,7 +954,7 @@ function restorePrev(){
   if(editing&&editing.remote&&editing.prev){
     driver=editing.prev.driver;$("driver").value=driver;lsSet("toll.driver",driver);
     sel=editing.prev.sel;applySel();saveSel();renderCar();
-    client=editing.prev.client;clientOther=editing.prev.clientOther;saveClient();renderClient();setJob(editing.prev.job||"");
+    client=editing.prev.client;clientOther=editing.prev.clientOther;saveClient();renderClient();setJob(editing.prev.job||"");setSite(editing.prev.site||"");
   }
 }
 $("cancelEdit").onclick=function(){restorePrev();editing=null;render();renderHist();renderAll()};
@@ -959,6 +1015,8 @@ var yd=new Date();yd.setDate(yd.getDate()-1);d1=d2=ymd(yd);$("d1").value=d1;$("d
 renderCar();renderClient();renderDrivers();$("driver").value=driver;$("one").checked=retMode==="none";if(retMode!=="none")prevRet=retMode;$("retMode").value=retMode==="none"?prevRet:retMode;$("side").value=oneSide;
 syncLeg("o");syncLeg("r");renderHist();render();
 $("histSeg").hidden=!SHEET_URL;
+buildPairs();
+if(SHEET_URL)loadRemote();   // 全員の記録を先に読んで、工番と現場名の組み合わせを覚える
 </script>
 </body>
 </html>

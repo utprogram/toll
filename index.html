@@ -679,9 +679,13 @@ function rowToRec(r){
   return {id:r.id,ts:Number(r.ts)||Date.now(),c:c,vn:r.car?String(r.car):"",g:r.client?String(r.client):"",w:r.job?String(r.job):"",s:r.site?String(r.site):"",d:r.driver?String(r.driver):"",m:m,sd:sd,
     dt:(ds.test(r.from||"")&&ds.test(r.to||""))?[r.from,r.to]:null,legs:legsA,n:sn,h:fnt,y:sy};
 }
+function todayCount(recs){
+  var t=new Date().toDateString();
+  return recs.filter(function(x){return x.ts&&new Date(x.ts).toDateString()===t}).length;
+}
 function renderAll(){
   var box=$("alist");
-  $("allInfo").textContent=remote.loading?"読み込んでいます…":remote.err?remote.err:(remote.loaded?remote.recs.length+"件(新しい順)":"");
+  $("allInfo").textContent=remote.loading?"読み込んでいます…":remote.err?remote.err:(remote.loaded?"今日の入力 "+todayCount(remote.recs)+"件(新しい順)":"");
   if(remote.loading&&!remote.recs.length){box.innerHTML="";return}
   if(!remote.recs.length){box.innerHTML='<div class="empty">'+(remote.err?"会社の表を読み込めませんでした。「更新」を押してください。":"まだ記録がありません。")+'</div>';return}
   box.innerHTML=remote.recs.map(function(x,i){return itemHTML(x,i,true)}).join("");

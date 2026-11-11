@@ -110,6 +110,9 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 .chk{display:flex;align-items:center;gap:10px;min-height:44px;font-weight:700;font-size:1.05rem;cursor:pointer}
 .chk input{width:22px;height:22px;accent-color:#f0b400}
 .page{display:none}
+.today{display:flex;align-items:baseline;gap:6px;background:var(--sign);color:#fff;border-radius:12px;padding:10px 16px;margin:6px 0 8px;font-weight:700}
+.today span{font-size:1rem}
+.today b{font-size:2.4rem;line-height:1.1;font-variant-numeric:tabular-nums}
 .help h2{margin:4px 0 10px;font-size:1.1rem}
 .help h3{margin:18px 0 6px;font-size:1rem}
 .help ul,.help ol{margin:0;padding-left:1.3em}
@@ -145,7 +148,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <main>
 <nav class="tabs" role="tablist">
 <button class="tab on" id="tab_search" type="button" role="tab" aria-selected="true">料金検索</button>
-<button class="tab" id="tab_logs" type="button" role="tab" aria-selected="false">履歴 <span class="badge" id="logBadge">0</span></button>
+<button class="tab" id="tab_logs" type="button" role="tab" aria-selected="false">履歴 <span class="badge warn" id="logBadge" hidden>未送信</span></button>
 <button class="tab" id="tab_help" type="button" role="tab" aria-selected="false">使い方</button>
 </nav>
 <div id="page-search" class="page on">
@@ -154,8 +157,8 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <hr>
 <label class="pick"><small>元請</small><select id="client"></select></label>
 <input class="txt" id="clientOther" type="text" maxlength="20" placeholder="元請の名前" autocomplete="off" style="display:none;margin-top:8px">
-<label class="pick" style="display:block;margin-top:12px"><small>工番</small><input class="txt" id="job" type="text" maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false" list="jobList"></label>
 <label class="pick" style="display:block;margin-top:12px"><small>現場名</small><input class="txt" id="site" type="text" maxlength="30" autocomplete="off" spellcheck="false" list="siteList"></label>
+<label class="pick" style="display:block;margin-top:12px"><small>工番</small><input class="txt" id="job" type="text" maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false" list="jobList"></label>
 <datalist id="jobList"></datalist><datalist id="siteList"></datalist>
 <label class="pick" style="display:block;margin-top:12px"><span class="carhead"><small>使用する車</small><span class="pill" id="pill"></span></span><select id="car"></select></label>
 <label class="pick" style="display:block;margin-top:12px"><small>運転者(代表)</small><input class="txt" id="driver" type="text" list="drivers" maxlength="20" placeholder="名前" autocomplete="off"></label>
@@ -213,8 +216,8 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 <li><b>運転者(代表)を入れる</b><span>前に入れた名前が残っています。</span></li>
 <li><b>行きの出発と到着を選ぶ</b><span>東部湯の丸は、路線も選びます。一覧にない場所は「手入力…」で入力できます。</span></li>
 <li><b>帰りを決める</b><span>「行きの逆」「自分で選ぶ」「なし」から選びます。</span></li>
-<li><b>工番を入れる</b><span>全角で入れても半角に、小文字は大文字になります。わからないときは、空のままでも記録できます。続けて記録しても、工番はそのまま残ります。</span></li>
-<li><b>現場名を入れる</b><span>工番を入れると、元請・現場名・行きの出発と到着が、自動で入ります(会社の表の「現場一覧」にある工番)。現場名を選ぶと工番が入ります。一覧にない工番は、これまでに記録された組み合わせから現場名が入ります。自動で入ったあとも、直せます。</span></li>
+<li><b>現場名を選ぶ</b><span>元請を選ぶと、その元請の現場だけが候補に出ます。現場名を選ぶと工番が入ります。会社の表の「現場一覧」にある現場なら、行きの出発と到着も自動で入ります。自動で入ったあとも、直せます。</span></li>
+<li><b>工番を入れる</b><span>工番を入れても、元請・現場名・行きの出発と到着が自動で入ります。候補には、選んだ元請の工番だけが出ます(NDK松本はNDM、NDK長野はNDN、NDK高崎はNDTではじまる工番)。全角で入れても半角に、小文字は大文字になります。わからないときは、空のままでも記録できます。</span></li>
 <li><b>使用する車を選ぶ</b><span>選ぶと、右上に車種区分が出ます。</span></li>
 <li><b>通常か割引かを選ぶ</b><span>行きと帰りそれぞれで、料金のボタンを押して選びます。選んだ方が記録されます。</span></li>
 <li><b>「この条件で記録する」を押す</b><span>記録すると、元請はそのままで、使用する車と運転者(代表)は空に戻ります。続けて入力するときは、車と運転者を入れ直してください。入れ忘れや選び忘れがあると、「〇〇を選択してください」と出て、その欄に移動します。画面の下に「記録しました」と出れば完了です。履歴に残り、会社の表にも送られます。</span></li>
@@ -366,7 +369,7 @@ function setClientByName(n){
   if(!n){client="";clientOther=""}
   else if(CLIENTS.indexOf(n)>=0){client=n;clientOther=""}
   else{client="__other";clientOther=n}
-  saveClient();renderClient();
+  saveClient();renderClient();refreshPairLists();
 }
 var car=null,vehicles=[],sel="",vehName="";   // car=車種区分の番号、sel=選択中("v:車両ID" か "c:区分の番号")
 var SHEET_URL="https://script.google.com/macros/s/AKfycbyUEWKiRE5eu8wWOiU8vqAKkh8NwZBsiiRhqvvfm3h4_vRetqaj_QxM9SHvQzO7wkwobQ/exec";   // 会社のスプレッドシートの受け口(Apps ScriptのURL)。空なら端末内の履歴だけ使う
@@ -646,9 +649,8 @@ function itemHTML(x,i,remoteItem){
 }
 function renderHist(){
   var box=$("hlist");
-  $("logBadge").textContent=hist.length;
   var np=hist.filter(function(x){return x.pend}).length;
-  $("logBadge").classList.toggle("warn",np>0);
+  $("logBadge").hidden=np===0;
   $("unsent").hidden=np===0;$("unsentN").textContent=np;
   $("clearAll").style.visibility=hist.length?"visible":"hidden";
   if(!hist.length){box.innerHTML='<div class="empty">「この条件で記録する」を押すと、ここに残ります。</div>';return}
@@ -685,7 +687,7 @@ function todayCount(recs){
 }
 function renderAll(){
   var box=$("alist");
-  $("allInfo").textContent=remote.loading?"読み込んでいます…":remote.err?remote.err:(remote.loaded?"今日の入力 "+todayCount(remote.recs)+"件(新しい順)":"");
+  $("allInfo").innerHTML=remote.loading?"読み込んでいます…":remote.err?esc(remote.err):(remote.loaded?'<div class="today"><span>今日の入力</span><b>'+todayCount(remote.recs)+'</b><span>件</span></div>新しい順に表示しています':"");
   if(remote.loading&&!remote.recs.length){box.innerHTML="";return}
   if(!remote.recs.length){box.innerHTML='<div class="empty">'+(remote.err?"会社の表を読み込めませんでした。「更新」を押してください。":"まだ記録がありません。")+'</div>';return}
   box.innerHTML=remote.recs.map(function(x,i){return itemHTML(x,i,true)}).join("");
@@ -920,11 +922,22 @@ function buildPairs(){
   pairs=P;
   refreshPairLists();
 }
+// 工番の頭文字で元請がわかる(NDの次: M=松本、N=長野、T=高崎)。選んだ元請の工番・現場だけを候補に出す
+var JOB_PREFIX={"NDK松本":"NDM","NDK長野":"NDN","NDK高崎":"NDT"};
+function prefixClient(w){var c="";Object.keys(JOB_PREFIX).forEach(function(k){if(w.indexOf(JOB_PREFIX[k])===0)c=k});return c}
+function jobFits(w){
+  var c=clientName();if(!c)return true;
+  var p=JOB_PREFIX[c];
+  if(p)return w.indexOf(p)===0;
+  var m=siteByJob[w];
+  if(m&&m.g)return m.g===c;
+  return !prefixClient(w);   // NDK以外の元請では、NDM・NDN・NDTの工番は出さない
+}
 function refreshPairLists(){
-  var jl=$("jobList"),sl=$("siteList"),s=siteVal(),js=pairs.bySite[s];
-  var jobs=(js&&js.length)?js.slice().reverse():Object.keys(pairs.byJob).sort();
+  var jl=$("jobList"),sl=$("siteList"),s=siteVal(),js=(pairs.bySite[s]||[]).filter(jobFits);
+  var jobs=js.length?js.slice().reverse():Object.keys(pairs.byJob).filter(jobFits).sort();
   jl.innerHTML=jobs.map(function(w){var m=siteByJob[w];return '<option value="'+esc(w)+'" label="'+esc(m?(m.g?m.g+" ":"")+m.s:(pairs.byJob[w]||""))+'"></option>'}).join("");
-  sl.innerHTML=Object.keys(pairs.bySite).sort().map(function(n){return '<option value="'+esc(n)+'"></option>'}).join("");
+  sl.innerHTML=Object.keys(pairs.bySite).filter(function(n){return pairs.bySite[n].some(jobFits)}).sort().map(function(n){return '<option value="'+esc(n)+'"></option>'}).join("");
 }
 function fillFromJob(){
   var j=jobVal(),s=pairs.byJob[j];
@@ -934,8 +947,8 @@ function fillFromJob(){
   applySite();
 }
 function fillFromSite(){
-  var s=siteVal(),js=pairs.bySite[s];
-  if(s&&js&&js.length){
+  var s=siteVal(),js=(pairs.bySite[s]||[]).filter(jobFits);
+  if(s&&js.length){
     if(jobVal()===""||jobAuto){
       if(js.length===1){$("job").value=js[0];jobAuto=true}
       else if(js.indexOf(jobVal())<0){$("job").value="";jobAuto=false}   // 前に自動で入れた工番が、この現場のものでなければ消す
@@ -954,8 +967,8 @@ var CLIENT_FROM={"NDK高崎":"東部湯の丸","NDK長野":"梓川スマート",
 $("client").onchange=function(){client=this.value;if(client!=="__other")clientOther="";saveClient();renderClient();
   var f=CLIENT_FROM[client];
   if(f&&!editing&&fromOptions("o").indexOf(f)>=0){legs.o.f=f;legs.o.route=null;syncLeg("o")}
-  render();if(client==="__other")$("clientOther").focus()};
-$("clientOther").oninput=function(){clientOther=this.value;saveClient();render()};
+  refreshPairLists();render();if(client==="__other")$("clientOther").focus()};
+$("clientOther").oninput=function(){clientOther=this.value;saveClient();refreshPairLists();render()};
 $("car").onchange=function(){sel=this.value;applySel();saveSel();renderCar();render()};
 function restorePrev(){
   if(editing&&editing.remote&&editing.prev){
@@ -1048,7 +1061,11 @@ function setOutLeg(f,t){
 }
 function applySite(){
   var j=jobVal(),x=siteByJob[j];
-  if(!x){lastAppliedJob="";return}
+  if(!x){
+    lastAppliedJob="";
+    var pc=prefixClient(j);if(pc&&!client){setClientByName(pc);refreshPairLists();render()}   // 一覧にない工番でも、頭文字から元請を入れる
+    return;
+  }
   if(j===lastAppliedJob)return;   // 同じ工番では一度だけ入れる(そのあと手で直した分は消さない)
   lastAppliedJob=j;
   if(x.g)setClientByName(x.g);

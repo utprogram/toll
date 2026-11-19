@@ -393,6 +393,7 @@ function nm(leg,k){return leg[k]===MANUAL?(leg[k+"t"]||"").trim():leg[k]}
 // 片道だけの「帰り」では、出発は料金所の先の場所すべて、到着は料金のある出発地(塩尻・松本・梓川・安曇野)にする
 var RETFROMS=[];
 FROMS.forEach(function(f){if(ROUTES[f])return;DEST[f].forEach(function(d){if(RETFROMS.indexOf(d)<0)RETFROMS.push(d)})});
+FROMS.forEach(function(f){if(!ROUTES[f])return;Object.keys(ROUTES[f]).forEach(function(k){ROUTES[f][k].forEach(function(d){if(RETFROMS.indexOf(d)<0)RETFROMS.push(d)})})});   // 東部湯の丸(高崎方面)の先も、帰りの出発に入れる
 function retOnly(){return retMode==="none"&&oneSide==="r"}
 function fromOptions(p){return p==="o"?(retOnly()?RETFROMS:FROMS):ALL}
 function toOptions(leg){
@@ -400,7 +401,7 @@ function toOptions(leg){
   if(R){if(!R[leg.route])leg.route=Object.keys(R)[0];return R[leg.route].slice()}
   if(ADJ[f]){
     var L=ADJ[f].slice();
-    if(retOnly()&&leg===legs.o){var ord=["塩尻","松本","梓川スマート","安曇野"];L.sort(function(x,y){return ord.indexOf(x)-ord.indexOf(y)})}   // 帰りの到着は 塩尻・松本・梓川・安曇野 の順
+    if(retOnly()&&leg===legs.o){var ord=["塩尻","松本","梓川スマート","安曇野","東部湯の丸"];L.sort(function(x,y){return ord.indexOf(x)-ord.indexOf(y)})}   // 帰りの到着は 塩尻・松本・梓川・安曇野 の順
     return L;
   }
   return ALL.filter(function(x){return x!==f});
@@ -1025,7 +1026,13 @@ $("site").addEventListener("change",function(){this.value=siteVal();fillFromSite
 var CLIENT_FROM={"NDK高崎":"東部湯の丸","NDK長野":"梓川スマート","NDK松本":"塩尻"};   // 元請を選ぶと、行きの出発を自動で選ぶ(あとから変えられる)
 $("client").onchange=function(){client=this.value;if(client!=="__other")clientOther="";saveClient();renderClient();
   var f=CLIENT_FROM[client];
-  if(f&&!editing&&fromOptions("o").indexOf(f)>=0){legs.o.f=f;legs.o.route=null;syncLeg("o")}
+  if(f&&!editing){
+    // 行きは「拠点 → 行き先」、帰りだけのときは「行き先 → 拠点」、帰りを自分で選ぶときは帰りも逆向きに入れる
+    var cur=retOnly()?nm(legs.o,"f"):nm(legs.o,"t");
+    var ds=ROUTES[f]?[].concat.apply([],Object.keys(ROUTES[f]).map(function(k){return ROUTES[f][k]})):(DEST[f]||[]);
+    if(!cur||cur===f||!find(f,cur))cur=ds[0];
+    if(cur)setOutLeg(f,cur);
+  }
   refreshPairLists();render();if(client==="__other")$("clientOther").focus()};
 $("clientOther").oninput=function(){clientOther=this.value;saveClient();refreshPairLists();render()};
 $("car").onchange=function(){sel=this.value;applySel();saveSel();renderCar();render()};
